@@ -3,15 +3,15 @@
   const aspectRatio = 0.6;
 
   // Get the container and its dimensions
-  const container = document.getElementById("stacked-column-chart4");
+  const container = document.getElementById("biodiversity-stacked-column-chart");
   const containerWidth = container.offsetWidth;
   const containerHeight = containerWidth * aspectRatio;
 
   // Calculate the dynamic margins
   const dynamicMargin = {
-    top: containerHeight * 0.15,
-    right: containerWidth * 0.05,
-    bottom: containerHeight * 0.1,
+    top: containerHeight * 0.05,
+    right: containerWidth * 0.4,
+    bottom: containerHeight * 0.05,
     left: containerWidth * 0.08,
   };
 
@@ -21,7 +21,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#stacked-column-chart4")
+    .select("#biodiversity-stacked-column-chart")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -29,7 +29,7 @@
     .attr("transform", `translate(${dynamicMargin.left},${dynamicMargin.top})`);
 
   // Load data from CSV - replace with the correct path to your CSV file
-  d3.csv("./data/graph-17-data.csv").then((data) => {
+  d3.csv("./data/biodiversity1.csv").then((data) => {
     // Process data and calculate percentages
     const categories = data.columns.slice(1); // assuming first column is 'Location'
 
@@ -46,10 +46,10 @@
     });
 
     // Define scales
-    const xScale = d3.scaleLinear().range([0, width]).domain([0, 100]);
-    const yScale = d3
+    const yScale = d3.scaleLinear().range([height, 0]).domain([0, 100]);
+    const xScale = d3
       .scaleBand()
-      .range([0, height])
+      .range([0, width])
       .domain(data.map((d) => d.Location))
       .padding(0.1);
 
@@ -83,19 +83,16 @@
       .data((d) => d)
       .enter()
       .append("rect")
-      .attr("y", (d) => yScale(d.data.Location))
-      .attr("x", (d) => xScale(d[0]))
-      .attr("height", yScale.bandwidth())
-      .attr("width", (d) => xScale(d[1]) - xScale(d[0]));
-
-      
+      .attr("x", (d) => xScale(d.data.Location))
+      .attr("y", (d) => yScale(d[1]))
+      .attr("width", xScale.bandwidth())
+      .attr("height", (d) => yScale(d[0]) - yScale(d[1]));
 
     groups
       .selectAll("rect")
       .on("mouseover", (event, d) => {
         // Make the tooltip visible
-        tooltip
-          .style("opacity", 1)
+        tooltip.style("opacity", 1);
       })
       .on("mousemove", (event, d) => {
         const mousePosition = d3.pointer(event);
@@ -118,71 +115,61 @@
       })
       .on("mouseout", () => {
         // Hide the tooltip
-        tooltip
-          .style("opacity", 0)
+        tooltip.style("opacity", 0);
       });
 
     // Create custom tick values
     const tickValues = d3.range(0, 101, 20); // Generates an array [0, 20, 40, 60, 80, 100]
 
     // Add an axis to show the percentage
+    const yAxis = d3
+      .axisLeft(yScale)
+      .tickValues(tickValues) // Set custom tick values
+      .tickFormat((d) => d + "%");
+
+    // Append yAxis to svg
+    const yAxisGroup = svg
+      .append("g")
+      .attr("class", "chart-labels")
+      .call(yAxis);
+
+    // Optional: Add an xAxis
     const xAxis = d3
       .axisBottom(xScale)
-      .tickValues(tickValues) // Set custom tick values
-      .tickFormat((d) => d + "%")
       .tickSizeOuter(0)
-      .tickSizeInner(0);
-
-    // Append xAxis to svg (this part remains unchanged)
-    const xAxisGroup = svg
+      .tickSizeInner(0)
+      .tickPadding(5);
+    svg
       .append("g")
       .attr("transform", `translate(0, ${height})`)
       .attr("class", "chart-labels")
       .call(xAxis);
 
-    // Remove the path for the x-axis line
-    xAxisGroup.select(".domain").remove();
-
-    // Conditionally style the tick text based on their data value
-    xAxisGroup.selectAll(".tick text").style("text-anchor", (d) => {
-      return d === 0 ? "start" : d === 100 ? "end" : "middle";
-    });
-
-    // Optional: Add a yAxis
-    const yAxis = d3
-      .axisLeft(yScale)
-      .tickSizeOuter(0)
-      .tickSizeInner(0)
-      .tickPadding(5);
-    svg.append("g").attr("class", "chart-labels").call(yAxis);
-
-    // Append a g element for each category to serve as a legend on top of the chart
+    // Add a legend
     const legend = svg
-      .selectAll(".legend")
-      .data(categories)
-      .enter()
       .append("g")
-      .attr("class", "legend")
-      .attr("transform", (d, i) => {
-        const legendX = i * (width / categories.length); // Spacing out legends
-        const legendY = -dynamicMargin.top / 2; // Positioning above the bars
-        return `translate(${legendX}, ${legendY})`;
-      });
-
-    legend
-      .append("rect")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", 18)
-      .attr("height", 18)
-      .style("fill", (d) => colorScale(d));
-
-    legend
-      .append("text")
       .attr("class", "chart-labels")
-      .attr("x", 24)
-      .attr("y", 9)
-      .attr("dy", ".35em")
-      .text((d) => d);
+      .attr("transform", `translate(${width + 20}, 0)`);
+
+    const legendItemHeight = 20;
+
+    categories.slice().reverse().forEach((category, i) => {
+      const legendRow = legend
+        .append("g")
+        .attr("transform", `translate(0, ${i * legendItemHeight})`);
+
+      legendRow
+        .append("rect")
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", colorScale(category));
+
+      legendRow
+        .append("text")
+        .attr("x", 24)
+        .attr("y", 9)
+        .attr("dy", "0.35em")
+        .text(category);
+    });
   });
 })();

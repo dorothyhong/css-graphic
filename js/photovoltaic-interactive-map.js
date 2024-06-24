@@ -1,7 +1,7 @@
 (async () => {
   // Load data from external sources
   const us = await d3.json("https://d3js.org/us-10m.v2.json");
-  const projectData = await d3.csv("./data/graph-5-data.csv");
+  const projectData = await d3.csv("./data/photovoltaic2.csv");
 
   // Map of states to data
   const fipsToData = {};
@@ -21,7 +21,7 @@
     return d;
   });
 
-  const container = document.getElementById("interactive-map3");
+  const container = document.getElementById("photovoltaic-interactive-map");
   const aspectRatio = 0.75;
   const containerWidth = container.offsetWidth;
   const containerHeight = containerWidth * aspectRatio;
@@ -36,7 +36,7 @@
   const height = containerHeight - dynamicMargin.top - dynamicMargin.bottom;
 
   const svg = d3
-    .select("#interactive-map3")
+    .select("#photovoltaic-interactive-map")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .append("g")

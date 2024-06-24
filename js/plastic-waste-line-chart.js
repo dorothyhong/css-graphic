@@ -2,7 +2,7 @@
   const aspectRatio = 0.7; // Define an aspect ratio for the chart
 
   // Get the container and its dimensions
-  const container = document.getElementById("line-chart");
+  const container = document.getElementById("plastic-waste-line-chart");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -20,7 +20,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#line-chart")
+    .select("#plastic-waste-line-chart")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -48,7 +48,7 @@
   const tooltip = d3.select("#tooltip");
 
   // Load and process the CSV data
-  d3.csv("./data/graph-13-data.csv").then((data) => {
+  d3.csv("./data/plastic-waste1.csv").then((data) => {
     // Parse years and convert string values to numbers
     data.forEach((d) => {
       d.Year = new Date(+d.Year, 0, 1);

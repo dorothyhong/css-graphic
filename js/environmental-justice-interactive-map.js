@@ -1,7 +1,7 @@
 (async () => {
   // Load data from external sources
   const us = await d3.json("https://d3js.org/us-10m.v2.json");
-  const releaseData = await d3.csv("./data/graph-2-data.csv");
+  const releaseData = await d3.csv("./data/environmental-justice1.csv");
 
   // Maps of state states to color and storage data
   const fipsToData = {};
@@ -37,7 +37,7 @@
   const aspectRatio = 0.75; // Define an aspect ratio for the chart
 
   // Get the container and its dimensions
-  const container = document.getElementById("interactive-map");
+  const container = document.getElementById("environmental-justice-interactive-map");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -55,7 +55,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#interactive-map")
+    .select("#environmental-justice-interactive-map")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")

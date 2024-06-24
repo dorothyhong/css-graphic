@@ -1,6 +1,6 @@
 (function () {
   const aspectRatio = 0.7;
-  const container = document.getElementById("pv-diagram");
+  const container = document.getElementById("photovoltaic-diagram");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -17,7 +17,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#pv-diagram")
+    .select("#photovoltaic-diagram")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")

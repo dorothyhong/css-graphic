@@ -1,9 +1,9 @@
 (function () {
   /* ----------------------- Dynamic dimensions ----------------------- */
-  const aspectRatio = 0.5;
+  const aspectRatio = 0.7;
 
   // Get the container and its dimensions
-  const container = document.getElementById("stacked-area-chart4");
+  const container = document.getElementById("renewable-energy-stacked-area-chart");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -12,7 +12,7 @@
     top: containerHeight * 0.1,
     right: containerWidth * 0.17,
     bottom: containerHeight * 0.1,
-    left: containerWidth * 0.07,
+    left: containerWidth * 0.05,
   };
 
   // Calculate the width and height for the inner drawing area
@@ -21,7 +21,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#stacked-area-chart4")
+    .select("#renewable-energy-stacked-area-chart")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -33,18 +33,18 @@
   const y = d3.scaleLinear().range([height, 0]);
 
   const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"));
-  const yAxis = d3.axisLeft(y).tickFormat(d3.format(","));
+  const yAxis = d3.axisLeft(y).tickFormat((d) => d);
 
   const colorScale = d3
     .scaleOrdinal()
-    .domain(["U.S.", "European Union", "Brazil", "India"])
-    .range(["#eb5250", "#6298c6", "#75bf70", "#f38f53"]);
+    .domain(["Biomass", "Hydroelectric", "Wind", "Solar", "Geothermal"])
+    .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6", "#f38f53"]);
   // .range(["#1d476d", "#3167a4", "#8fc8e5", "#ffcb03", "#ffd579"]);
 
   const tooltip = d3.select("#tooltip");
 
   /* ----------------------- Load and process the CSV data ----------------------- */
-  d3.csv("./data/graph-18-data.csv").then((data) => {
+  d3.csv("./data/renewable-energy1.csv").then((data) => {
     // Parse years and convert string values to numbers
     data.forEach((d) => {
       d.Year = new Date(+d.Year, 0, 1);
@@ -56,36 +56,17 @@
     // Stack the data
     const stack = d3
       .stack()
-      .keys(["U.S.", "European Union", "Brazil", "India"]);
+      .keys(["Biomass", "Hydroelectric", "Wind", "Solar", "Geothermal"]);
     const stackedData = stack(data);
-
-    svg
-      .append("text")
-      .attr("x", width / 2)
-      .attr("y", -dynamicMargin.top / 2) // Place below the chart
-      .attr("class", "chart-subtitle")
-      .attr("text-anchor", "middle") // Center the text
-      .attr("fill", "#000") // Text color
-      .text("Ethanol");
 
     /* ----------------------- Update the scale domains with the processed data ----------------------- */
     x.domain(d3.extent(data, (d) => d.Year));
-    const maxYValue =
-      Math.ceil(
-        d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1])) / 100
-      ) * 100;
+    const maxYValue = Math.ceil(
+      d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1]))
+    );
     y.domain([0, maxYValue]);
 
     // Draw the X-axis
-    // Create tick values for every other year
-    const startYear = d3.min(data, (d) => d.Year.getFullYear());
-    const endYear = d3.max(data, (d) => d.Year.getFullYear());
-    // const xTickValues = [];
-    // for (let year = startYear; year <= endYear; year += 2) {
-    //   xTickValues.push(new Date(year, 0, 1));
-    // }
-    // xAxis.tickValues(xTickValues);
-
     const maxDataYear = d3.max(data, (d) => d.Year);
     const xTickValues = x.ticks().concat(maxDataYear); // Add 2023 as a Date object
     xAxis.tickValues(xTickValues);
@@ -97,14 +78,7 @@
 
     xAxisGroup
       .selectAll(".tick text")
-      .attr("class", "chart-labels")
-      .style("text-anchor", (d) => {
-        return d.getFullYear() === startYear
-          ? "start"
-          : d.getFullYear() === endYear
-          ? "end"
-          : "middle";
-      });
+      .attr("class", "chart-labels");
 
     // Draw the Y-axis
     const yAxisGroup = svg
@@ -119,7 +93,7 @@
       .attr("text-anchor", "middle")
       .attr("transform", `translate(0, -${dynamicMargin.top / 2})`)
       .style("fill", "#000")
-      .text("Tb/d");
+      .text("Quads");
 
     /* ----------------------- Draw the chart ----------------------- */
     // Define the area generator
@@ -239,70 +213,77 @@
         });
 
         const total =
-          hoverData["U.S."] +
-          hoverData.Brazil +
-          hoverData["European Union"] +
-          hoverData.India;
-
+          hoverData.Biomass +
+          hoverData.Wind +
+          hoverData.Solar +
+          hoverData.Hydroelectric +
+          hoverData.Geothermal;
         tooltip.html(`
-                  <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
-                  <table class="tooltip-content">
-            
-                      <tr>
-                      <td><span class="color-legend" style="background-color: ${colorScale(
-                        "India"
-                      )};"></span>India</td>
-                      <td class="value">${formatNumber(
-                        hoverData.India
-                      )} (${formatNumber2(
-          (hoverData.India / total) * 100
+                <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
+                <table class="tooltip-content">
+                    <tr>
+                        <td><span class="color-legend" style="background-color: ${colorScale(
+                          "Geothermal"
+                        )};"></span>Geothermal</td>
+                        <td class="value">${formatNumber(
+                          hoverData.Geothermal
+                        )} (${formatNumber2(
+          (hoverData.Geothermal / total) * 100
         )}%)</td>
-                      </tr>
-                      <tr>
-                          <td><span class="color-legend" style="background-color: ${colorScale(
-                            "Brazil"
-                          )};"></span>Brazil</td>
-                          <td class="value">${formatNumber(
-                            hoverData.Brazil
-                          )} (${formatNumber2(
-          (hoverData.Brazil / total) * 100
+                    </tr>
+                    <tr>
+                        <td><span class="color-legend" style="background-color: ${colorScale(
+                          "Solar"
+                        )};"></span>Solar</td>
+                        <td class="value">${formatNumber(
+                          hoverData.Solar
+                        )} (${formatNumber2(
+          (hoverData.Solar / total) * 100
+        )}%) </td>
+                    </tr>
+                    <tr>
+                    <td><span class="color-legend" style="background-color: ${colorScale(
+                      "Hydroelectric"
+                    )};"></span>Hydroelectric</td>
+                    <td class="value">${formatNumber(
+                      hoverData.Hydroelectric
+                    )} (${formatNumber2(
+          (hoverData.Hydroelectric / total) * 100
         )}%)</td>
-                      </tr>
-                      <tr>
-                          <td><span class="color-legend" style="background-color: ${colorScale(
-                            "European Union"
-                          )};"></span>European Union</td>
-                          <td class="value">${formatNumber(
-                            hoverData["European Union"]
-                          )} (${formatNumber2(
-          (hoverData["European Union"] / total) * 100
+                    </tr>
+                    <tr>
+                        <td><span class="color-legend" style="background-color: ${colorScale(
+                          "Wind"
+                        )};"></span>Wind</td>
+                        <td class="value">${formatNumber(hoverData.Wind)} (${formatNumber2(
+          (hoverData.Wind / total) * 100
         )}%)</td>
-                      </tr>
-                      <tr>
-                          <td><span class="color-legend" style="background-color: ${colorScale(
-                            "U.S."
-                          )};"></span>U.S.</td>
-                          <td class="value">${formatNumber(
-                            hoverData["U.S."]
-                          )} (${formatNumber2(
-          (hoverData["U.S."] / total) * 100
+                    </tr>
+                    <tr>
+                        <td><span class="color-legend" style="background-color: ${colorScale(
+                          "Biomass"
+                        )};"></span>Biomass</td>
+                        <td class="value">${formatNumber(
+                          hoverData.Biomass
+                        )} (${formatNumber2(
+          (hoverData.Biomass / total) * 100
         )}%)</td>
-        </tr>
-                  </table>
-                  <table class="tooltip-total">
-                     <tr>
-                    <td><strong>Total</strong></td>
-                    <td class="value">${formatNumber(total)} (100%)</td>
-                  </tr>
-                  </table>
-                `);
+                    </tr>
+                </table>
+                <table class="tooltip-total">
+                   <tr>
+                  <td><strong>Total</strong></td>
+                  <td class="value">${formatNumber(total)} (100%)</td>
+                </tr>
+                </table>
+              `);
 
         // Positioning the circles
         const totalStack = [];
         let accumulatingStack = 0;
 
         // Calculate the top edge of each stack element
-        ["U.S.", "European Union", "Brazil", "India"].forEach(
+        ["Biomass", "Hydroelectric", "Wind", "Solar", "Geothermal"].forEach(
           (cat) => {
             accumulatingStack += hoverData[cat];
             totalStack.push(accumulatingStack);

@@ -3,14 +3,14 @@
     const aspectRatio = 0.7;
 
     // Get the container and its dimensions
-    const container = document.getElementById("stacked-column-chart3");
+    const container = document.getElementById("renewable-energy-stacked-column-chart2");
     const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
     const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
     // Calculate the dynamic margins
     const dynamicMargin = {
         top: containerHeight * 0.1,
-        right: containerWidth * 0.18,
+        right: containerWidth * 0.17,
         bottom: containerHeight * 0.1,
         left: containerWidth * 0.05,
     };
@@ -21,7 +21,7 @@
 
     // Append SVG object
     const svg = d3
-        .select("#stacked-column-chart3")
+        .select("#renewable-energy-stacked-column-chart2")
         .append("svg")
         .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
         .attr("preserveAspectRatio", "xMinYMin meet")
@@ -37,23 +37,16 @@
 
     const colorScale = d3
         .scaleOrdinal()
-        .domain(["Annual Additions","Cumulative Capacity"])
-        .range(["#3167a4", "#8fc8e5"]);
-        // .range(["#ce5845", "#ffd579"]);
+        .domain(["Utility","Residential","Commercial","Community Solar"])
+        .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6", "#f38f53"]);
+        // .range(["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]);
+        // .range(["#3167a4", "#8fc8e5", "#386660", "#e2e27a"]);
         
 
     const tooltip = d3.select("#tooltip");
 
     /* ----------------------- Load and process the CSV data ----------------------- */
-
-    /* ----------------------- DISCLAIMER FOR THE GRAPH-12-DATA.CSV ----------------------- */
-    // For "Cumulative Capacity" column, the REAL "Cumulative Capacity" data has 
-    // been subtracted by the "Annual Additions" for the purposes of stacking them. 
-    // If you stack it wihtout subtracking, you would be "adding" the Annual Additions twice. 
-    // For these reasons, you need to add Annual Additions and Cumulative Capacity to get the REAL Cumulative Capacity data. 
-
-
-    d3.csv("./data/graph-12-data.csv").then((data) => {
+    d3.csv("./data/renewable-energy4.csv").then((data) => {
         // Parse years and convert string values to numbers
         data.forEach((d) => {
             d.Year = new Date(+d.Year, 0, 1);
@@ -63,7 +56,7 @@
         });
 
         // Stack the data
-        const stack = d3.stack().keys(["Cumulative Capacity", "Annual Additions"]);
+        const stack = d3.stack().keys(["Utility","Residential","Commercial","Community Solar"]);
         const stackedData = stack(data);
 
         /* ----------------------- Update the scale domains with the processed data ----------------------- */
@@ -73,7 +66,6 @@
                 d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1])) / 20000
                 ) * 20000;
         y.domain([0, maxYValue]);
-        
 
         // Draw the X-axis
         const xTickValues = x.domain();
@@ -86,9 +78,7 @@
 
         xAxisGroup
             .selectAll(".tick text")
-            .attr("class", "chart-labels")
-            .attr("transform", "rotate(-45)") // Rotate the text
-            .style("text-anchor", "end");
+            .attr("class", "chart-labels");
 
         // Draw the Y-axis
         const yAxisGroup = svg
@@ -101,9 +91,9 @@
             .append("text")
             .attr("class", "chart-labels")
             .attr("text-anchor", "middle")
-            .attr("transform", `translate(${dynamicMargin.left / 2}, -${dynamicMargin.top / 2})`)
+            .attr("transform", `translate(0, -${dynamicMargin.top / 2})`)
             .style("fill", "#000")
-            .text("Thousands (MW)");
+            .text("Thousands");
 
         
         /* ----------------------- Draw the chart ----------------------- */
@@ -188,24 +178,31 @@
                     <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
                     <table class="tooltip-content">  
                     <tr>
-                        <td><span class="color-legend" style="background-color: ${colorScale("Annual Additions")};"></span>Annual Additions</td>
-                        <td class="value">${formatNumber(hoverData["Annual Additions"])}</td>
+                        <td><span class="color-legend" style="background-color: ${colorScale("Community Solar")};"></span>Community Solar</td>
+                        <td class="value">${formatNumber(hoverData["Community Solar"])}</td>
                     </tr>
                     <tr>
-                        <td><span class="color-legend" style="background-color: ${colorScale("Cumulative Capacity")};"></span>Cumulative Capacity</td>
-                        <td class="value">${formatNumber(hoverData["Annual Additions"] + hoverData["Cumulative Capacity"])}</td>
+                        <td><span class="color-legend" style="background-color: ${colorScale("Commercial")};"></span>Commercial</td>
+                        <td class="value">${formatNumber(hoverData.Commercial)}</td>
                     </tr>
+                    <tr>
+                        <td><span class="color-legend" style="background-color: ${colorScale("Residential")};"></span>Residential</td>
+                        <td class="value">${formatNumber(hoverData.Residential)}</td>
+                    </tr>
+                    <tr>
+                        <td><span class="color-legend" style="background-color: ${colorScale("Utility")};"></span>Utility</td>
+                        <td class="value">${formatNumber(hoverData.Utility)}</td>
+                    </tr>
+                    </table>
+                    <table class="tooltip-total">
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td class="value">${formatNumber(hoverData.Utility + hoverData.Commercial + hoverData["Community Solar"] + hoverData.Residential)}</td>
+                        </tr>
                     </table>
                 `);
             }
         }
-
-        // <table class="tooltip-total">
-        // <tr>
-        //     <td><strong>Cumulative Capacity</strong></td>
-        //     <td class="value">${formatNumber(hoverData["Annual Additions"] + hoverData["Cumulative Capacity"])}</td>
-        // </tr>
-        // </table>
 
         // Create a rect for listening to mouse events
         svg

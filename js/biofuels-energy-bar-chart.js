@@ -3,7 +3,7 @@
   const aspectRatio = 0.7;
 
   // Get the container and its dimensions
-  const container = document.getElementById("column-chart2");
+  const container = document.getElementById("biofuels-energy-bar-chart");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -21,7 +21,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#column-chart2")
+    .select("#biofuels-energy-bar-chart")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -43,6 +43,7 @@
       "#e16674",
       "#e16674",
       "#c1824b",
+      "#c1824b",
       "#c36043",
       "#799a6c",
     ]); // Updated color range
@@ -62,7 +63,7 @@
   .text("Fossil Energy Ratio (FER)"); 
 
   /* ----------------------- Loading and processing data ----------------------- */
-  d3.csv("data/graph-16-data.csv", (d) => ({
+  d3.csv("data/biofuels-energy4.csv", (d) => ({
     feedstock: d.Feedstock,
     energyRatio: +d["Fossil Energy Ratio"],
     range: d.Range,
@@ -94,26 +95,27 @@
 
     /* ----------------------- Adding labels ----------------------- */
     svg
+    .selectAll(".label")
+    .data(data.filter(d => d.feedstock !== 'Biodiesel (Seed Oil)')) // Don't include Biodiesel (Seed Oil)
+    .enter()
+    .append("text")
+    .attr("class", "chart-labels")
+    .attr("x", (d) => xScale(d.energyRatio) + 3) // Offset the label to the right of the bar
+    .attr("y", (d) => yScale(d.feedstock) + yScale.bandwidth() / 2)
+    .attr("dy", "0.35em") // Vertically center
+    .text((d) => formatDecimal(d.energyRatio)) // Round to one decimal place
+    .attr("fill", "#000"); // Text color
+  
+
+
+    /* ----------------------- Range for Biodiesel (Seed Oil) ----------------------- */
+    svg
       .selectAll(".label")
-      .data(data)
+      .data(data.filter(d => d.feedstock === 'Biodiesel (Seed Oil)'))
       .enter()
       .append("text")
       .attr("class", "chart-labels")
       .attr("x", (d) => xScale(d.energyRatio) + 3) // Offset the label to the right of the bar
-      .attr("y", (d) => yScale(d.feedstock) + yScale.bandwidth() / 2)
-      .attr("dy", "0.35em") // Vertically center
-      .text((d) => formatDecimal(d.energyRatio)) // Round to one decimal place
-      .attr("fill", "#000"); // Text color
-
-
-    /* ----------------------- Adding ranges ----------------------- */
-    svg
-      .selectAll(".label")
-      .data(data)
-      .enter()
-      .append("text")
-      .attr("class", "chart-labels")
-      .attr("x", (d) => xScale(d.energyRatio) + width * 0.06) // Offset the label to the right of the bar
       .attr("y", (d) => yScale(d.feedstock) + yScale.bandwidth() / 2)
       .attr("dy", "0.35em") // Vertically center
       .text((d) => d.range) // Round to one decimal place

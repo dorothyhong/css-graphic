@@ -1,7 +1,7 @@
 (async () => {
   // Load data from external sources
   const us = await d3.json("https://d3js.org/us-10m.v2.json");
-  const projectData = await d3.csv("./data/graph-11-data.csv");
+  const projectData = await d3.csv("./data/grid-energy1.csv");
 
   // Maps of state states to color and storage data
   const fipsToData = {};
@@ -29,7 +29,7 @@
   const aspectRatio = 0.75; // Define an aspect ratio for the chart
 
   // Get the container and its dimensions
-  const container = document.getElementById("interactive-map2");
+  const container = document.getElementById("grid-energy-interactive-map");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -47,7 +47,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#interactive-map2")
+    .select("#grid-energy-interactive-map")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")

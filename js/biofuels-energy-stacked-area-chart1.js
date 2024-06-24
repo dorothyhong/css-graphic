@@ -1,18 +1,18 @@
 (function () {
   /* ----------------------- Dynamic dimensions ----------------------- */
-  const aspectRatio = 0.7;
+  const aspectRatio = 0.5;
 
   // Get the container and its dimensions
-  const container = document.getElementById("stacked-area-chart");
+  const container = document.getElementById("biofuels-energy-stacked-area-chart");
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
   // Calculate the dynamic margins
   const dynamicMargin = {
     top: containerHeight * 0.1,
-    right: containerWidth * 0.1,
+    right: containerWidth * 0.17,
     bottom: containerHeight * 0.1,
-    left: containerWidth * 0.05,
+    left: containerWidth * 0.07,
   };
 
   // Calculate the width and height for the inner drawing area
@@ -21,7 +21,7 @@
 
   // Append SVG object
   const svg = d3
-    .select("#stacked-area-chart")
+    .select("#biofuels-energy-stacked-area-chart")
     .append("svg")
     .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
     .attr("preserveAspectRatio", "xMinYMin meet")
@@ -33,19 +33,18 @@
   const y = d3.scaleLinear().range([height, 0]);
 
   const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"));
-  const yAxis = d3.axisLeft(y).tickFormat((d) => d / 1000000);
+  const yAxis = d3.axisLeft(y).tickFormat(d3.format(","));
 
   const colorScale = d3
     .scaleOrdinal()
-    .domain(["Bus", "Heavy rail", "Other rail", "Other"])
-    .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6"]);
-  // .range(["#3167a4", "#8fc8e5", "#386660", "#e2e27a"]);
-  // .range(["#3167a4", "#8fc8e5", "#ffcb03", "#ffd579"]);
+    .domain(["U.S.", "European Union", "Brazil", "India"])
+    .range(["#eb5250", "#6298c6", "#75bf70", "#f38f53"]);
+  // .range(["#1d476d", "#3167a4", "#8fc8e5", "#ffcb03", "#ffd579"]);
 
   const tooltip = d3.select("#tooltip");
 
   /* ----------------------- Load and process the CSV data ----------------------- */
-  d3.csv("./data/graph-1-data.csv").then((data) => {
+  d3.csv("./data/biofuels-energy1.csv").then((data) => {
     // Parse years and convert string values to numbers
     data.forEach((d) => {
       d.Year = new Date(+d.Year, 0, 1);
@@ -55,18 +54,38 @@
     });
 
     // Stack the data
-    const stack = d3.stack().keys(["Bus", "Heavy rail", "Other rail", "Other"]);
+    const stack = d3
+      .stack()
+      .keys(["U.S.", "European Union", "Brazil", "India"]);
     const stackedData = stack(data);
+
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", -dynamicMargin.top / 2) // Place below the chart
+      .attr("class", "chart-subtitle")
+      .attr("text-anchor", "middle") // Center the text
+      .attr("fill", "#000") // Text color
+      .text("Ethanol");
 
     /* ----------------------- Update the scale domains with the processed data ----------------------- */
     x.domain(d3.extent(data, (d) => d.Year));
     const maxYValue =
       Math.ceil(
-        d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1])) / 1000000
-      ) * 1000000;
+        d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1])) / 100
+      ) * 100;
     y.domain([0, maxYValue]);
 
     // Draw the X-axis
+    // Create tick values for every other year
+    const startYear = d3.min(data, (d) => d.Year.getFullYear());
+    const endYear = d3.max(data, (d) => d.Year.getFullYear());
+    // const xTickValues = [];
+    // for (let year = startYear; year <= endYear; year += 2) {
+    //   xTickValues.push(new Date(year, 0, 1));
+    // }
+    // xAxis.tickValues(xTickValues);
+
     const maxDataYear = d3.max(data, (d) => d.Year);
     const xTickValues = x.ticks().concat(maxDataYear); // Add 2023 as a Date object
     xAxis.tickValues(xTickValues);
@@ -80,9 +99,9 @@
       .selectAll(".tick text")
       .attr("class", "chart-labels")
       .style("text-anchor", (d) => {
-        return d.getFullYear() === 1990
+        return d.getFullYear() === startYear
           ? "start"
-          : d.getFullYear() === 2023
+          : d.getFullYear() === endYear
           ? "end"
           : "middle";
       });
@@ -100,7 +119,7 @@
       .attr("text-anchor", "middle")
       .attr("transform", `translate(0, -${dynamicMargin.top / 2})`)
       .style("fill", "#000")
-      .text("Millions");
+      .text("Tb/d");
 
     /* ----------------------- Draw the chart ----------------------- */
     // Define the area generator
@@ -184,42 +203,6 @@
       svg.selectAll(".area-path").style("fill-opacity", 1);
     }
 
-    // Define the pandemic arrow
-    svg
-      .append("line")
-      .attr("x1", x(new Date(2019, 11, 1)))
-      .attr("y1", y(maxYValue) + height / 18)
-      .attr("x2", x(new Date(2019, 11, 1)))
-      .attr("y2", y(maxYValue) + height / 5)
-      .attr("stroke", "red")
-      .attr("stroke-width", 1.5)
-      .attr("marker-end", "url(#arrow)");
-
-    // Define the text label for the pandemic arrow
-    svg
-      .append("text")
-      .attr("x", x(new Date(2019, 11, 1)))
-      .attr("y", y(maxYValue) + height / 22)
-      .attr("class", "chart-labels")
-      .attr("text-anchor", "middle")
-      .style("fill", "red")
-      .text("Pandemic");
-
-    // Add arrow marker
-    svg
-      .append("svg:defs")
-      .append("svg:marker")
-      .attr("id", "arrow")
-      .attr("viewBox", "0 -5 10 10")
-      .attr("refX", 0)
-      .attr("refY", 0)
-      .attr("markerWidth", 4)
-      .attr("markerHeight", 4)
-      .attr("orient", "auto")
-      .append("path")
-      .attr("d", "M0,-5L10,0L0,5")
-      .style("fill", "red");
-
     /* ----------------------- Mouseover event ----------------------- */
     function onMouseMove(event) {
       const [xPos, yPos] = d3.pointer(event, this);
@@ -234,7 +217,7 @@
         .style("left", `${event.pageX + dynamicMargin.left / 4}px`)
         .style("top", `${event.pageY}px`);
 
-      const formatNumber = d3.format(",");
+      const formatNumber = d3.format(",.2f");
       const formatNumber2 = d3.format(",.1f");
       if (hoverData) {
         /* ----------------------- Highlight the area layer being hovered over ----------------------- */
@@ -256,63 +239,75 @@
         });
 
         const total =
-          hoverData.Other +
-          hoverData["Other rail"] +
-          hoverData["Heavy rail"] +
-          hoverData.Bus;
+          hoverData["U.S."] +
+          hoverData.Brazil +
+          hoverData["European Union"] +
+          hoverData.India;
+
         tooltip.html(`
-  <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
-  <table class="tooltip-content">
-      <tr>
-          <td><span class="color-legend" style="background-color: ${colorScale(
-            "Other"
-          )};"></span>Other</td>
-          <td class="value">${formatNumber(hoverData.Other)} (${formatNumber2(
-          (hoverData.Other / total) * 100
+                  <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
+                  <table class="tooltip-content">
+            
+                      <tr>
+                      <td><span class="color-legend" style="background-color: ${colorScale(
+                        "India"
+                      )};"></span>India</td>
+                      <td class="value">${formatNumber(
+                        hoverData.India
+                      )} (${formatNumber2(
+          (hoverData.India / total) * 100
         )}%)</td>
-      </tr>
-      <tr>
-          <td><span class="color-legend" style="background-color: ${colorScale(
-            "Other rail"
-          )};"></span>Other rail</td>
-          <td class="value">${formatNumber(
-            hoverData["Other rail"]
-          )} (${formatNumber2((hoverData["Other rail"] / total) * 100)}%)</td>
-      </tr>
-      <tr>
-          <td><span class="color-legend" style="background-color: ${colorScale(
-            "Heavy rail"
-          )};"></span>Heavy rail</td>
-          <td class="value">${formatNumber(
-            hoverData["Heavy rail"]
-          )} (${formatNumber2((hoverData["Heavy rail"] / total) * 100)}%)</td>
-      </tr>
-      <tr>
-          <td><span class="color-legend" style="background-color: ${colorScale(
-            "Bus"
-          )};"></span>Bus</td>
-          <td class="value">${formatNumber(hoverData.Bus)} (${formatNumber2(
-          (hoverData.Bus / total) * 100
+                      </tr>
+                      <tr>
+                          <td><span class="color-legend" style="background-color: ${colorScale(
+                            "Brazil"
+                          )};"></span>Brazil</td>
+                          <td class="value">${formatNumber(
+                            hoverData.Brazil
+                          )} (${formatNumber2(
+          (hoverData.Brazil / total) * 100
         )}%)</td>
-      </tr>
-  </table>
-  <table class="tooltip-total">
-    <tr>
-        <td><strong>Total</strong></td>
-        <td class="value">${formatNumber(total)} (100%)</td>
-    </tr>
-  </table>
-`);
+                      </tr>
+                      <tr>
+                          <td><span class="color-legend" style="background-color: ${colorScale(
+                            "European Union"
+                          )};"></span>European Union</td>
+                          <td class="value">${formatNumber(
+                            hoverData["European Union"]
+                          )} (${formatNumber2(
+          (hoverData["European Union"] / total) * 100
+        )}%)</td>
+                      </tr>
+                      <tr>
+                          <td><span class="color-legend" style="background-color: ${colorScale(
+                            "U.S."
+                          )};"></span>U.S.</td>
+                          <td class="value">${formatNumber(
+                            hoverData["U.S."]
+                          )} (${formatNumber2(
+          (hoverData["U.S."] / total) * 100
+        )}%)</td>
+        </tr>
+                  </table>
+                  <table class="tooltip-total">
+                     <tr>
+                    <td><strong>Total</strong></td>
+                    <td class="value">${formatNumber(total)} (100%)</td>
+                  </tr>
+                  </table>
+                `);
 
         // Positioning the circles
         const totalStack = [];
         let accumulatingStack = 0;
 
         // Calculate the top edge of each stack element
-        ["Bus", "Heavy rail", "Other rail", "Other"].forEach((cat) => {
-          accumulatingStack += hoverData[cat];
-          totalStack.push(accumulatingStack);
-        });
+        ["U.S.", "European Union", "Brazil", "India"].forEach(
+          (cat) => {
+            accumulatingStack += hoverData[cat];
+            totalStack.push(accumulatingStack);
+          }
+        );
 
         mouseG
           .selectAll("circle")

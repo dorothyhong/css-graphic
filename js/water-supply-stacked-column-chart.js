@@ -1,5 +1,5 @@
 (function() {
-    const container = document.getElementById("stacked-column-chart");
+    const container = document.getElementById("water-supply-stacked-column-chart");
     const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
     const aspectRatio = 0.7; // Example aspect ratio
     const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
@@ -17,7 +17,7 @@
     const height = containerHeight - dynamicMargin.top - dynamicMargin.bottom;
 
     // Append SVG object
-    const svg = d3.select("#stacked-column-chart").append("svg")
+    const svg = d3.select("#water-supply-stacked-column-chart").append("svg")
         .attr('viewBox', `0 0 ${containerWidth} ${containerHeight}`)
         .attr('preserveAspectRatio', 'xMinYMin meet')
         .append('g')
@@ -48,7 +48,7 @@
     const tooltip = d3.select('#tooltip');
 
     // Load CSV data and build chart
-    d3.csv("./data/graph-4-data.csv", d3.autoType).then(function(data) {
+    d3.csv("./data/water-supply1.csv", d3.autoType).then(function(data) {
 
         // Calculate the total BGD for the y-axis domain
         const totalBGD = d3.sum(data, d => d.BGD);
