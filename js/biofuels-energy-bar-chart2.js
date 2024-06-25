@@ -11,7 +11,7 @@
     const dynamicMargin = {
       top: containerHeight * 0.08,
       right: containerWidth * 0.05, // Adjust right margin if labels are too long
-      bottom: containerHeight * 0.1,
+      bottom: containerHeight * 0.05,
       left: containerWidth * 0.3, // Increase left margin to fit labels
     };
   
@@ -35,49 +35,55 @@
       .scaleOrdinal()
       .range([
         "#ae416c",
-        "#ae416c",
-        "#ae416c",
-        "#e16674",
-        "#e16674",
-        "#c1824b",
-        "#c1824b",
-        "#c36043",
         "#c36043",
         "#799a6c",
-        "#75bf70", 
+        "#75bf70",
         "#f38f53",
+        "#e16674",
+        "#c1824b",
       ]); // Updated color range
     const formatDecimal = d3.format(".0f"); // Formatter to round to one decimal place
   
     /* ----------------------- Icon mapping ----------------------- */
   
-    const yAxis = (g) => g.call(d3.axisLeft(yScale).tickSizeOuter(0).tickSizeInner(0).tickPadding(5));
+    const yAxis = (g) =>
+      g.call(
+        d3.axisLeft(yScale).tickSizeOuter(0).tickSizeInner(0).tickPadding(5)
+      );
   
-  
-    svg.append("text")
-    .attr("x", width / 2)
-    .attr("y", -dynamicMargin.top/2) // Place below the chart
-    .attr("class", "chart-labels")
-    .attr("text-anchor", "middle") // Center the text
-    .attr("fill", "#000") // Text color
-    .text("Fossil Energy Ratio (FER)"); 
+    svg
+      .append("text")
+      .attr("x", width / 2)
+      .attr("y", -dynamicMargin.top / 2) // Place below the chart
+      .attr("class", "chart-labels")
+      .attr("text-anchor", "middle") // Center the text
+      .attr("fill", "#000") // Text color
+      .text("Biofuel Yield (GJ/ha)");
   
     /* ----------------------- Loading and processing data ----------------------- */
+    // This function creates a unique identifier by combining the feedstock and region
+    function createUniqueId(d) {
+      return d.feedstock + " (" + d.region + ")";
+    }
+  
     d3.csv("data/biofuels-energy3-2.csv", (d) => ({
       feedstock: d.Feedstock,
+      region: d.Region,
       biofuelYield: +d["Biofuel Yield"],
     })).then((data) => {
       // Update scales and color domain
       xScale.domain([0, d3.max(data, (d) => d.biofuelYield)]);
-      yScale.domain(data.map((d) => d.feedstock));
+      // Use the unique identifier function for the domain
+      yScale.domain(data.map(createUniqueId));
       colorScale.domain(data.map((d) => d.feedstock));
   
-      // Draw the y-axis
+      // Draw the y-axis with the unique identifier
       svg
         .append("g")
         .call(yAxis)
-        .selectAll(".tick text") // select all text elements within ticks
-        .attr("class", "chart-labels"); // Set the class to 'chart-labels'
+        .selectAll(".tick text")
+        .attr("class", "chart-labels")
+        .text((d) => d); // Only display the feedstock, omit the region part
   
       /* ----------------------- Drawing bars ----------------------- */
       svg
@@ -87,25 +93,25 @@
         .append("rect")
         .attr("class", "bar")
         .attr("x", 0)
-        .attr("y", (d) => yScale(d.feedstock))
+        .attr("y", (d) => yScale(createUniqueId(d))) // Use the unique identifier function
         .attr("width", (d) => xScale(d.biofuelYield))
         .attr("height", yScale.bandwidth())
-        .attr("fill", (d) => colorScale(d.feedstock)); // Use color scale for fill
+        .attr("fill", (d) => colorScale(d.feedstock));
   
       /* ----------------------- Adding labels ----------------------- */
       svg
-      .selectAll(".label")
-      .data(data) // Don't include Biodiesel (Seed Oil)
-      .enter()
-      .append("text")
-      .attr("class", "chart-labels")
-      .attr("x", (d) => xScale(d.biofuelYield) + 3) // Offset the label to the right of the bar
-      .attr("y", (d) => yScale(d.feedstock) + yScale.bandwidth() / 2)
-      .attr("dy", "0.35em") // Vertically center
-      .text((d) => formatDecimal(d.biofuelYield)) // Round to one decimal place
-      .attr("fill", "#000"); // Text color
-    
-  
-  
+        .selectAll(".label")
+        .data(data)
+        .enter()
+        .append("text")
+        .attr("class", "chart-labels")
+        .attr("x", (d) => xScale(d.biofuelYield) + 3)
+        .attr("y", (d) => yScale(createUniqueId(d)) + yScale.bandwidth() / 2)
+        .attr("dy", "0.35em")
+        .text((d) => formatDecimal(d.biofuelYield))
+        .attr("fill", "#000");
+
     });
   })();
+  
+  

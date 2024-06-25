@@ -11,7 +11,7 @@
   const dynamicMargin = {
     top: containerHeight * 0.08,
     right: containerWidth * 0.05, // Adjust right margin if labels are too long
-    bottom: containerHeight * 0.1,
+    bottom: containerHeight * 0.05,
     left: containerWidth * 0.22, // Increase left margin to fit labels
   };
 
