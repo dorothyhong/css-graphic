@@ -139,9 +139,9 @@
                     <tr>
                         <td><span class="color-legend" style="background-color: #377eb8"
                         )};"></span>LCOE</td>
-                        <td class="value">$${formatNumber(
+                        <td class="value">$<strong>${formatNumber(
                           hoverData["LCOE"]
-                        )}</td>
+                        )}</strong>/MWh</td>
                     </tr>
                 </tr>
                 </table>

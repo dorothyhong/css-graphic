@@ -2,17 +2,16 @@
     /* ----------------------- Dynamic dimensions ----------------------- */
     const aspectRatio = 0.7;
 
-    // Get the container and its dimensions
-    const container = document.getElementById("temp-chart");
+    const container = document.getElementById("biofuels-energy-column-chart");
     const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
     const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
     // Calculate the dynamic margins
     const dynamicMargin = {
-        top: 20,
-        right: 20,
-        bottom: 30,
-        left: 40
+        top: containerHeight * 0.1,
+        right: containerWidth * 0.1,
+        bottom: containerHeight * 0.1,
+        left: containerWidth * 0.05,
     };
 
     // Calculate the width and height for the inner drawing area
@@ -21,7 +20,7 @@
 
     // Append SVG object
     const svg = d3
-        .select("#temp-chart")
+        .select("#biofuels-energy-column-chart")
         .append("svg")
         .attr("width", containerWidth)
         .attr("height", containerHeight)
@@ -39,7 +38,8 @@
     const y = d3.scaleLinear()
         .rangeRound([height, 0]);
 
-    const z = d3.scaleOrdinal()
+    const colorScale = d3.scaleOrdinal()
+        .domain(["Brazil", "USA", "EU", "Indonesia and Malaysia", "China", "Mozambique", "South Africa"])
         .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
 
     /* ----------------------- Loading and processing data ----------------------- */
@@ -86,14 +86,29 @@
             .attr("class", "feedstockGroup")
             .attr("transform", d => `translate(${x0(d.key)},0)`);
 
-        feedstockGroup.selectAll("rect")
-            .data(d => d.value)
-            .enter().append("rect")
-            .attr("x", d => x1(d.Region))
-            .attr("y", d => y(d["Biofuel yield"]))
-            .attr("width", x1.bandwidth())
-            .attr("height", d => y(0) - y(d["Biofuel yield"]))
-            .attr("fill", d => z(d.Region));
+        feedstockGroup.each(function (d) {
+            const barWidth = x0.bandwidth() / d.value.length; // Calculate width per bar in the group
+
+            d3.select(this).selectAll("rect")
+                .data(d.value)
+                .enter().append("rect")
+                .attr("x", (d, i) => i * barWidth) // Position each bar within the group
+                .attr("y", d => y(d["Biofuel yield"]))
+                .attr("width", barWidth)
+                .attr("height", d => y(0) - y(d["Biofuel yield"]))
+                .attr("fill", d => colorScale(d["Region"]));
+
+            // // Add labels for each bar
+            // d3.select(this).selectAll(".bar-label")
+            //     .data(d.value)
+            //     .enter().append("text")
+            //     .attr("class", "bar-label")
+            //     .attr("x", (d, i) => i * barWidth + barWidth / 2) // Position labels at the center of each bar
+            //     .attr("y", d => y(d["Biofuel yield"]) - 5) // Offset the label slightly above the bar
+            //     .attr("text-anchor", "middle") // Center-align the text horizontally
+            //     .attr("fill", "#000") // Set the text color
+            //     .text(d => d["Region"]); // Set the text content to the region name
+        });
 
         // Optional: Add axis labels, legends, tooltips, etc.
     }).catch(function (error) {

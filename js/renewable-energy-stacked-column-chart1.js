@@ -189,11 +189,11 @@
                     <table class="tooltip-content">  
                     <tr>
                         <td><span class="color-legend" style="background-color: ${colorScale("Annual Additions")};"></span>Annual Additions</td>
-                        <td class="value">${formatNumber(hoverData["Annual Additions"])}</td>
+                        <td class="value">${formatNumber(hoverData["Annual Additions"])} MW</td>
                     </tr>
                     <tr>
                         <td><span class="color-legend" style="background-color: ${colorScale("Cumulative Capacity")};"></span>Cumulative Capacity</td>
-                        <td class="value">${formatNumber(hoverData["Annual Additions"] + hoverData["Cumulative Capacity"])}</td>
+                        <td class="value">${formatNumber(hoverData["Annual Additions"] + hoverData["Cumulative Capacity"])} MW</td>
                     </tr>
                     </table>
                 `);

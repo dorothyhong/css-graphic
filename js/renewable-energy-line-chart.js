@@ -164,22 +164,46 @@
       .style("stroke", (d) => colorScale(d.key))
       .style("stroke-width", 1.5);
 
-    lines.each(function (lineData) {
-      // Select the current line group
-      const lineGroup = d3.select(this);
+    // After you've created the solid lines for the existing data:
+lines.each(function (lineData) {
+  const lineGroup = d3.select(this);
+    
+  // Get relevant data points for the dashed line
+  const prevYearData = lineData.values.find(d => d.Year.getFullYear() === 2021);
+  const nextYearData = lineData.values.find(d => d.Year.getFullYear() === 2023);
+    
+  // Only draw if both points are available
+  if (prevYearData && nextYearData) {
+    lineGroup
+      .append("line")
+      .attr("x1", x(prevYearData.Year))
+      .attr("y1", y(prevYearData.value))
+      .attr("x2", x(nextYearData.Year))
+      .attr("y2", y(nextYearData.value))
+      .attr("class", "dashed-line")
+      .style("stroke-dasharray", "5,5") // Customize the dash pattern here
+      .style("stroke", colorScale(lineData.key))
+      .style("stroke-width", 1.5)
+      .style("opacity", 0.7); // Adjust this to match your desired opacity for dashed lines
+  }
+});
 
-      // Append circles to the line group
-      // lineGroup
-      //   .selectAll('.line-dot')
-      //   .data(lineData.values.filter(d => d.value != null))  // Filter out missing data
-      //   .enter()
-      //   .append('circle')
-      //   .attr('class', 'line-dot')
-      //   .attr('cx', d => x(d.Year))
-      //   .attr('cy', d => y(d.value))
-      //   .attr('r', 2.5) // Set the radius of the circle
-      //   .style('fill', colorScale(lineData.key));
-    });
+    // lines.each(function (lineData) {
+    //   // Select the current line group
+    //   const lineGroup = d3.select(this);
+
+    //   // Append circles to the line group
+    //   lineGroup
+    //     .selectAll('.line-dot')
+    //     .data(lineData.values.filter(d => d.value != null))  // Filter out missing data
+    //     .enter()
+    //     .append('circle')
+    //     .attr('class', 'line-dot')
+    //     .attr('cx', d => x(d.Year))
+    //     .attr('cy', d => y(d.value))
+    //     .attr('r', 2.5) // Set the radius of the circle
+    //     .style('fill', colorScale(lineData.key));
+    // });
 
     // Add legend
     const legend = svg
@@ -244,35 +268,35 @@
       const formatNumber = d3.format(",");
       if (hoverData) {
         tooltip.html(`
-            <div class="tooltip-title">${hoverData.Year}</div>
+            <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
             <table class="tooltip-content">
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Nuclear")};"></span>Nuclear</td>
-                <td class="value">${formatNumber(hoverData["Nuclear"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Nuclear"])}</strong>/MWh</td>
               </tr>
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Gas Peaking")};"></span>Gas Peaking</td>
-                <td class="value">${formatNumber(hoverData["Gas Peaking"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Gas Peaking"])}</strong>/MWh</td>
               </tr>
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Coal")};"></span>Coal</td>
-                <td class="value">${formatNumber(hoverData["Coal"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Coal"])}</strong>/MWh</td>
               </tr>
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Geothermal")};"></span>Geothermal</td>
-                <td class="value">${formatNumber(hoverData["Geothermal"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Geothermal"])}</strong>/MWh</td>
               </tr>
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Gas Combined Cycle")};"></span>Gas Combined Cycle</td>
-                <td class="value">${formatNumber(hoverData["Gas Combined Cycle"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Gas Combined Cycle"])}</strong>/MWh</td>
               </tr>
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Solar PV-Utility")};"></span>Solar PV-Utility</td>
-                <td class="value">${formatNumber(hoverData["Solar PV-Utility"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Solar PV-Utility"])}</strong>/MWh</td>
               </tr>
               <tr>
                 <td><span class="color-legend" style="background-color: ${colorScale("Wind-Onshore")};"></span>Wind-Onshore</td>
-                <td class="value">${formatNumber(hoverData["Wind-Onshore"])}</td>
+                <td class="value">$<strong>${formatNumber(hoverData["Wind-Onshore"])}</strong>/MWh</td>
               </tr>
             </table>
           `);

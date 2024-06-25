@@ -58,12 +58,13 @@
     .append("pattern")
     .attr("id", "diagonalHatch")
     .attr("patternUnits", "userSpaceOnUse")
-    .attr("width", 4)
-    .attr("height", 4)
+    .attr("width", 8)
+    .attr("height", 8)
     .append("path")
-    .attr("d", "M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2")
-    .attr("stroke", "#333333")
+    .attr("d", "M0,8 l8,-8 M-2,2 l4,-4 M6,10 l4,-4")
+    .attr("stroke", "#797979") 
     .attr("stroke-width", 1);
+
 
   // defs
   //   .append("pattern")
@@ -77,16 +78,17 @@
   //   .attr("r", 2)
   //   .attr("fill", "red");
   // Define the vertical line pattern
-defs
-.append("pattern")
-.attr("id", "verticalLinePattern")
-.attr("patternUnits", "userSpaceOnUse")
-.attr("width", 5) // width of the pattern box
-.attr("height", 4) // height of the pattern box
-.append("path")
-.attr("d", "M 2,0 L 2,4") // A path for vertical line
-.attr("stroke", "red") // Color of the line
-.attr("stroke-width", 1.5); // Width of the stroke
+  
+  defs
+    .append("pattern")
+    .attr("id", "verticalLinePattern")
+    .attr("patternUnits", "userSpaceOnUse")
+    .attr("width", 5) // Width of the pattern box
+    .attr("height", 4) // Height of the pattern box
+    .append("path")
+    .attr("d", "M 2.5,0 L 2.5,4") // A path for vertical line
+    .attr("stroke", "red") 
+    .attr("stroke-width", 1.5); // Width of the stroke for better visibility
 
   let selectedOption = "all"; // Default selected option
 
@@ -118,7 +120,7 @@ defs
           group
             .append("path")
             .attr("d", path(stateData))
-            .attr("fill", "#FFFF8F");
+            .attr("fill", "#ffeed2");
         }
       }
 
@@ -152,7 +154,7 @@ defs
               <div class="tooltip-title">${d.properties.name}</div>
               <table class="tooltip-content">
                   <tr>
-                      <td><span class="color-legend" style="background-color: #FFFF8F"></span>Projects: </td>
+                      <td><span class="color-legend" style="background-color: #ffeed2"></span>Projects: </td>
                       <td class="value">${
                         d.properties.projects ? "Yes" : "No"
                       }</td>
@@ -230,7 +232,7 @@ defs
 
   // Create the legend
   const legendData = [
-    { color: "#FFFF8F", text: "Projects" },
+    { color: "#ffeed2", text: "Projects" },
     { color: "url(#diagonalHatch)", text: "Legislation" },
     { color: "url(#verticalLinePattern)", text: "Programs" },
   ];

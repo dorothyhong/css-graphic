@@ -174,14 +174,14 @@
                     <tr>
                         <td><span class="color-legend" style="background-color: #377eb8"
                         )};"></span>LCOE</td>
-                        <td class="value">$${formatNumber(
+                        <td class="value">$<strong>${formatNumber(
                           hoverData["LCOE"]
-                        )}</td>
+                        )}</strong>/MWh</td>
                     </tr>
                     <tr>
                         <td><span class="color-legend" style="background-color: #e41a1c"
                         )};"></span>2030 Goal</td>
-                        <td class="value">$${goalValue}</td>
+                        <td class="value">$<strong>${goalValue}</strong>/MWh</td>
                     </tr>
                 </tr>
                 </table>

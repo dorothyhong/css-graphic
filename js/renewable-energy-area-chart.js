@@ -126,7 +126,7 @@
           .style("left", `${event.pageX + dynamicMargin.left / 4}px`)
           .style("top", `${event.pageY}px`);
   
-        const formatNumber = d3.format(",.2f");
+        const formatNumber = d3.format(",.1f");
         if (hoverData) {
           tooltip.html(`
                 <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
@@ -135,7 +135,7 @@
                         <td><span class="color-legend" style="background-color: #377eb8"></span>Production</td>
                         <td class="value">${formatNumber(
                           hoverData["Trillion Btu"] 
-                        )}</td>
+                        )} Trilion Btu</td>
                     </tr>
                 </table>
               `);

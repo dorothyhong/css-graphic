@@ -30,20 +30,24 @@
 
   // Load data from CSV - replace with the correct path to your CSV file
   d3.csv("./data/biodiversity1.csv").then((data) => {
-    // Process data and calculate percentages
-    const categories = data.columns.slice(1); // assuming first column is 'Location'
+// Process data and calculate percentages
+const categories = data.columns.slice(1); // assuming the first column is 'Location'
 
-    // Normalize data to percentages
-    data.forEach((d) => {
-      var total = 0;
-      categories.forEach((category) => {
-        d[category] = +d[category];
-        total += d[category];
-      });
-      categories.forEach((category) => {
-        d[category] = (d[category] / total) * 100; // convert to percentage
-      });
-    });
+// Normalize data to percentages
+data.forEach((d) => {
+  let total = 0;
+  categories.forEach((category) => {
+    d[category] = +d[category];
+    total += d[category];
+  });
+
+  // Store original values and calculate percentages
+  categories.forEach((category) => {
+    d[category + "_original"] = d[category]; // Store original value in a new property
+    d[category] = (d[category] / total) * 100; // Convert to percentage
+  });
+});
+
 
     // Define scales
     const yScale = d3.scaleLinear().range([height, 0]).domain([0, 100]);
@@ -88,35 +92,113 @@
       .attr("width", xScale.bandwidth())
       .attr("height", (d) => yScale(d[0]) - yScale(d[1]));
 
-    groups
-      .selectAll("rect")
-      .on("mouseover", (event, d) => {
-        // Make the tooltip visible
-        tooltip.style("opacity", 1);
-      })
-      .on("mousemove", (event, d) => {
-        const mousePosition = d3.pointer(event);
-        const category = d3.select(event.target.parentNode).datum().key; // This gets the key for the category of this element
+    // Define a variable to store the selected category for highlighting
+    let highlightedCategory = null;
 
-        tooltip
-          .html(
-            `
-            <div class="tooltip-title">${d.data.Location}</div>
-            <table class="tooltip-content">  
+    const legend = svg
+      .append("g")
+      .attr("class", "chart-legend")
+      .attr("transform", `translate(${width + dynamicMargin.left/2}, 0)`);
+
+    const legendItemHeight = containerHeight * 0.05;
+    const highlightOpacity = 0.8;
+    const dimmedOpacity = 0.2;
+
+    categories.slice().reverse().forEach((category, i) => {
+      // Define each legend item
+      const legendRow = legend
+        .append("g")
+        .attr("transform", `translate(0, ${i * legendItemHeight})`)
+        .classed("legend-item", true)
+        .on("mouseover", function () {
+          // Highlight all rect of this category (i.e., same color) across all groups
+          highlightedCategory = category;
+          svg.selectAll(".layer").style("opacity", (d) =>
+            d.key === category ? highlightOpacity : dimmedOpacity
+          );
+        })
+        .on("mouseout", function () {
+          // Reset the opacity and clear the highlighted category
+          highlightedCategory = null;
+          svg.selectAll(".layer").style("opacity", 1); // Reset all layers opacity to full on mouseout
+        });
+
+      // Legend color block
+      legendRow
+        .append("rect")
+        .attr("width", 18)
+        .attr("height", 18)
+        .attr("fill", colorScale(category));
+
+      // Legend label text
+      legendRow
+        .append("text")
+        .attr("x", 24)
+        .attr("y", 9)
+        .attr("dy", "0.35em")
+        .text(category);
+    });
+
+    const formatNumber = d3.format(",");
+
+    // Update mouseover behavior for rects
+    groups
+    .selectAll("rect")
+    .on("mouseover", function (event, d) {
+      // Make the tooltip visible
+      tooltip.style("opacity", 1);
+  
+      // Highlight the hovered bar and mute others
+      d3.select(this)
+        .style("opacity", 1)
+        .style("stroke-width", 3) // Optional: Add a border to highlight the rect
+        .style("stroke", "white"); // Optional: Border color
+  
+      groups
+        .selectAll("rect")
+        .filter((rect) => rect.data.Location !== d.data.Location)
+        .style("opacity", 0.5);
+    })
+    .on("mousemove", function (event, d) {
+      const mousePosition = d3.pointer(event);
+      const category = d3.select(this.parentNode).datum().key;
+  
+      tooltip
+      .html(
+        `
+        <div class="tooltip-title"><span class="color-legend" style="background-color: ${colorScale(
+              category
+            )};"></span>${formatNumber(category)}</div>
+
+        <table class="tooltip-content">
             <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale(category)};"></span>${category}: </td>
-                <td class="value">${(d[1] - d[0]).toFixed(0)}%</td>
+            <td>
+                Amount
+            </td>
+            <td class="value">${formatNumber(d.data[category + "_original"])}</td> 
             </tr>
-            </table>`
-          )
-          .style("opacity", 0.9)
-          .style("left", event.pageX + 15 + "px")
-          .style("top", event.pageY - 28 + "px");
-      })
-      .on("mouseout", () => {
-        // Hide the tooltip
-        tooltip.style("opacity", 0);
-      });
+            <tr>
+            <td>
+                Percent
+            </td>
+            <td class="value">${formatNumber(d.data[category].toFixed(0))}%</td>
+            </tr>
+        </table>`
+      )
+        .style("opacity", 0.9)
+        .style("left", event.pageX + 15 + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function () {
+      // Hide the tooltip
+      tooltip.style("opacity", 0);
+  
+      // Restore opacity and remove the border
+      d3.select(this).style("opacity", 1).style("stroke-width", 0);
+  
+      groups.selectAll("rect").style("opacity", 1);
+    });
+  
 
     // Create custom tick values
     const tickValues = d3.range(0, 101, 20); // Generates an array [0, 20, 40, 60, 80, 100]
@@ -144,32 +226,5 @@
       .attr("transform", `translate(0, ${height})`)
       .attr("class", "chart-labels")
       .call(xAxis);
-
-    // Add a legend
-    const legend = svg
-      .append("g")
-      .attr("class", "chart-labels")
-      .attr("transform", `translate(${width + 20}, 0)`);
-
-    const legendItemHeight = 20;
-
-    categories.slice().reverse().forEach((category, i) => {
-      const legendRow = legend
-        .append("g")
-        .attr("transform", `translate(0, ${i * legendItemHeight})`);
-
-      legendRow
-        .append("rect")
-        .attr("width", 18)
-        .attr("height", 18)
-        .attr("fill", colorScale(category));
-
-      legendRow
-        .append("text")
-        .attr("x", 24)
-        .attr("y", 9)
-        .attr("dy", "0.35em")
-        .text(category);
-    });
   });
 })();
