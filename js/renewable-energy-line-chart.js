@@ -34,21 +34,27 @@
   // Define the axes
   const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"));
   const yAxis = d3.axisLeft(y).tickFormat(d3.format("$")).ticks(4);
-//   const yAxis = d3.axisLeft(y).tickFormat((d) => d);
 
-  const colorScale = d3.scaleOrdinal()
-  .domain([
-    "Nuclear", "Gas Peaking", "Coal", "Geothermal", "Gas Combined Cycle", "Solar PV-Utility", "Wind-Onshore",
-  ])
-  .range([
-    "#e41a1c", // Nuclear
-    "#377eb8", // Gas Peaking
-    "#4daf4a", // Coal
-    "#984ea3", // Geothermal
-    "#ff7f00", // Gas Combined Cycle
-    "#88ccee", // Solar PV-Utility 
-    "#a65628", // Wind-Onshore
-  ]);
+  const colorScale = d3
+    .scaleOrdinal()
+    .domain([
+      "Nuclear",
+      "Gas Peaking",
+      "Coal",
+      "Geothermal",
+      "Gas Combined Cycle",
+      "Solar PV-Utility",
+      "Wind-Onshore",
+    ])
+    .range([
+      "#e41a1c", // Nuclear
+      "#377eb8", // Gas Peaking
+      "#4daf4a", // Coal
+      "#984ea3", // Geothermal
+      "#ff7f00", // Gas Combined Cycle
+      "#88ccee", // Solar PV-Utility
+      "#a65628", // Wind-Onshore
+    ]);
 
   const tooltip = d3.select("#tooltip");
 
@@ -86,20 +92,23 @@
       ) * 100;
     y.domain([0, maxYValue]);
 
-    // Draw the X-axis
-    const maxDataYear = d3.max(data, (d) => d.Year);
-    const decadeTicks = d3
-      .timeYears(x.domain()[0], x.domain()[1])
-      .filter((d) => d.getFullYear() % 2 === 0); // increment by decade
+    // Draw X-axis
+    const startYear = d3.min(data, (d) => d.Year.getFullYear());
+    const endYear = d3.max(data, (d) => d.Year.getFullYear());
 
-    // Ensure maxDataYear is included
-    let xTickValues = decadeTicks;
-    if (
-      !xTickValues.some((d) => d.getFullYear() === maxDataYear.getFullYear())
-    ) {
-      xTickValues = xTickValues.concat(maxDataYear);
+    // Define the years you want to filter out
+    const filteredYears = [2010];
+
+    // Filter xTickValues to exclude filteredYears
+    const xTickValues = x.ticks(d3.timeYear.every(2))
+      .filter(year => !filteredYears.includes(year.getFullYear()));
+
+    if (!xTickValues.includes(startYear)) {
+      xTickValues.unshift(new Date(startYear, 0, 1));
     }
-
+    if (!xTickValues.includes(endYear)) {
+      xTickValues.push(new Date(endYear, 0, 1));
+    }
     xAxis.tickValues(xTickValues);
 
     const xAxisGroup = svg
@@ -107,7 +116,16 @@
       .attr("transform", `translate(0,${height})`)
       .call(xAxis);
 
-    xAxisGroup.selectAll(".tick text").attr("class", "chart-labels");
+    xAxisGroup
+      .selectAll(".tick text")
+      .attr("class", "chart-labels")
+      .style("text-anchor", (d) => {
+        return d.getFullYear() === startYear
+          ? "start"
+          : d.getFullYear() === endYear
+          ? "end"
+          : "middle";
+      });
 
     // Draw the Y-axis
     const yAxisGroup = svg
@@ -124,6 +142,14 @@
       .style("fill", "#000")
       .text("$/MWh");
 
+    // Notes
+    yAxisGroup
+      .append("text")
+      .attr("class", "chart-labels")
+      .attr("text-anchor", "left")
+      .attr("transform", `translate(${width / 2}, ${height + dynamicMargin.bottom})`)
+      .style("fill", "red")
+      .text("* 2022 data is not available in the Lazard report");
 
     // Define the line generator
     const lineGenerator = d3
@@ -165,45 +191,32 @@
       .style("stroke-width", 1.5);
 
     // After you've created the solid lines for the existing data:
-lines.each(function (lineData) {
-  const lineGroup = d3.select(this);
-    
-  // Get relevant data points for the dashed line
-  const prevYearData = lineData.values.find(d => d.Year.getFullYear() === 2021);
-  const nextYearData = lineData.values.find(d => d.Year.getFullYear() === 2023);
-    
-  // Only draw if both points are available
-  if (prevYearData && nextYearData) {
-    lineGroup
-      .append("line")
-      .attr("x1", x(prevYearData.Year))
-      .attr("y1", y(prevYearData.value))
-      .attr("x2", x(nextYearData.Year))
-      .attr("y2", y(nextYearData.value))
-      .attr("class", "dashed-line")
-      .style("stroke-dasharray", "5,5") // Customize the dash pattern here
-      .style("stroke", colorScale(lineData.key))
-      .style("stroke-width", 1.5)
-      .style("opacity", 0.7); // Adjust this to match your desired opacity for dashed lines
-  }
-});
+    lines.each(function (lineData) {
+      const lineGroup = d3.select(this);
 
-    // lines.each(function (lineData) {
-    //   // Select the current line group
-    //   const lineGroup = d3.select(this);
+      // Get relevant data points for the dashed line
+      const prevYearData = lineData.values.find(
+        (d) => d.Year.getFullYear() === 2021
+      );
+      const nextYearData = lineData.values.find(
+        (d) => d.Year.getFullYear() === 2023
+      );
 
-    //   // Append circles to the line group
-    //   lineGroup
-    //     .selectAll('.line-dot')
-    //     .data(lineData.values.filter(d => d.value != null))  // Filter out missing data
-    //     .enter()
-    //     .append('circle')
-    //     .attr('class', 'line-dot')
-    //     .attr('cx', d => x(d.Year))
-    //     .attr('cy', d => y(d.value))
-    //     .attr('r', 2.5) // Set the radius of the circle
-    //     .style('fill', colorScale(lineData.key));
-    // });
+      // Only draw if both points are available
+      if (prevYearData && nextYearData) {
+        lineGroup
+          .append("line")
+          .attr("x1", x(prevYearData.Year))
+          .attr("y1", y(prevYearData.value))
+          .attr("x2", x(nextYearData.Year))
+          .attr("y2", y(nextYearData.value))
+          .attr("class", "dashed-line")
+          .style("stroke-dasharray", "5,5") // Customize the dash pattern here
+          .style("stroke", colorScale(lineData.key))
+          .style("stroke-width", 1.5)
+          .style("opacity", 0.7); // Adjust this to match your desired opacity for dashed lines
+      }
+    });
 
     // Add legend
     const legend = svg
@@ -271,36 +284,63 @@ lines.each(function (lineData) {
             <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
             <table class="tooltip-content">
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Nuclear")};"></span>Nuclear</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Nuclear"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Nuclear"
+                )};"></span>Nuclear</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Nuclear"]
+                )}</strong>/MWh</td>
               </tr>
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Gas Peaking")};"></span>Gas Peaking</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Gas Peaking"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Gas Peaking"
+                )};"></span>Gas Peaking</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Gas Peaking"]
+                )}</strong>/MWh</td>
               </tr>
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Coal")};"></span>Coal</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Coal"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Coal"
+                )};"></span>Coal</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Coal"]
+                )}</strong>/MWh</td>
               </tr>
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Geothermal")};"></span>Geothermal</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Geothermal"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Geothermal"
+                )};"></span>Geothermal</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Geothermal"]
+                )}</strong>/MWh</td>
               </tr>
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Gas Combined Cycle")};"></span>Gas Combined Cycle</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Gas Combined Cycle"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Gas Combined Cycle"
+                )};"></span>Gas Combined Cycle</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Gas Combined Cycle"]
+                )}</strong>/MWh</td>
               </tr>
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Solar PV-Utility")};"></span>Solar PV-Utility</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Solar PV-Utility"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Solar PV-Utility"
+                )};"></span>Solar PV-Utility</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Solar PV-Utility"]
+                )}</strong>/MWh</td>
               </tr>
               <tr>
-                <td><span class="color-legend" style="background-color: ${colorScale("Wind-Onshore")};"></span>Wind-Onshore</td>
-                <td class="value">$<strong>${formatNumber(hoverData["Wind-Onshore"])}</strong>/MWh</td>
+                <td><span class="color-legend" style="background-color: ${colorScale(
+                  "Wind-Onshore"
+                )};"></span>Wind-Onshore</td>
+                <td class="value">$<strong>${formatNumber(
+                  hoverData["Wind-Onshore"]
+                )}</strong>/MWh</td>
               </tr>
             </table>
           `);
-          
 
         const hoverDataPoints = keys
           .map((key) => ({ key, value: hoverData[key] }))

@@ -32,10 +32,8 @@
   const y = d3.scaleLinear().range([height, 0]);
 
   // Define the axes
-  const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"));
-
-  // const yAxis = d3.axisLeft(y).tickFormat(d3.format("$"));
-  const yAxis = d3.axisLeft(y).tickFormat(d3.format("$")).ticks(4); // CHECK THIS
+  const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y")).ticks(d3.timeYear.every(2));
+  const yAxis = d3.axisLeft(y).tickFormat(d3.format("$")).ticks(4); 
 
   const tooltip = d3.select("#tooltip");
 
@@ -51,7 +49,42 @@
     x.domain(d3.extent(data, (d) => d.Year));
     y.domain([0, Math.ceil(d3.max(data, (d) => d["LCOE"]) / 50) * 50]);
 
-    // Draw the Y-axis
+    // Draw X-axis
+    const startYear = d3.min(data, (d) => d.Year.getFullYear());
+    const endYear = d3.max(data, (d) => d.Year.getFullYear());
+
+    // Define the years you want to filter out
+    // const filteredYears = [1985, 2020];
+
+    // Filter xTickValues to exclude filteredYears
+    const xTickValues = x.ticks(d3.timeYear.every(2));
+      // .filter(year => !filteredYears.includes(year.getFullYear()));
+
+    if (!xTickValues.includes(startYear)) {
+      xTickValues.unshift(new Date(startYear, 0, 1));
+    }
+    if (!xTickValues.includes(endYear)) {
+      xTickValues.push(new Date(endYear, 0, 1));
+    }
+    xAxis.tickValues(xTickValues);
+
+    const xAxisGroup = svg
+      .append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(xAxis);
+
+    xAxisGroup
+      .selectAll(".tick text")
+      .attr("class", "chart-labels")
+      .style("text-anchor", (d) => {
+        return d.getFullYear() === startYear
+          ? "start"
+          : d.getFullYear() === endYear
+          ? "end"
+          : "middle";
+      });
+
+    // Draw Y-axis
     const yAxisGroup = svg
       .append("g")
       .call(yAxis)
@@ -66,21 +99,12 @@
       .style("fill", "#000")
       .text("$/MWh");
 
-    const xAxisGroup = svg
-      .append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(xAxis);
-
-    xAxisGroup.call(xAxis);
-    xAxisGroup.selectAll(".tick text").attr("class", "chart-labels");
 
     // Define the line generator
     const lineGenerator = d3
       .line()
       .x((d) => x(d.Year))
       .y((d) => y(d["LCOE"]));
-
-    
 
     const mainLine = svg
       .append("path")

@@ -45,7 +45,7 @@
   const dynamicMargin = {
     top: containerHeight * 0.05, // 5% of the container height
     right: containerWidth * 0.15, // 15% of the container width
-    bottom: containerHeight * 0.1, // 10% of the container height
+    bottom: containerHeight * 0.05, // 10% of the container height
     left: containerWidth * 0.08, // 5% of the container width
   };
 
@@ -114,7 +114,7 @@
         .html(
           `<div class="tooltip-title">${d.properties.name}</div>
           <div class="tooltip-content">
-          Toxic release: ${d.properties.release || 0}
+          Toxic release: ${d.properties.release || 0} million lb
           </div>`
         )
         .style("opacity", 0.9)
@@ -131,9 +131,9 @@
   const legendColors = ["#1d476d", "#2f65a7", "#8fc8e5", "#d8d8d8"];
   const legendText = [
     "> 150",
-    "> 35",
-    "> 0.5",
-    "> 0",
+    "35 - 150",
+    "0.5 - 35",
+    "< 0.5",
   ];
 
   const legendData = legendColors.map((color, i) => ({

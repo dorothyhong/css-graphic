@@ -66,7 +66,7 @@
       return d.feedstock + " (" + d.region + ")";
     }
   
-    d3.csv("data/biofuels-energy3-2.csv", (d) => ({
+    d3.csv("data/biofuels-energy3.csv", (d) => ({
       feedstock: d.Feedstock,
       region: d.Region,
       biofuelYield: +d["Biofuel Yield"],

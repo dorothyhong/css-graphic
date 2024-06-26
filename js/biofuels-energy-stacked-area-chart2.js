@@ -76,18 +76,17 @@
       y.domain([0, maxYValue]);
   
       // Draw the X-axis
-      // Create tick values for every other year
-    const startYear = d3.min(data, (d) => d.Year.getFullYear());
-    const endYear = d3.max(data, (d) => d.Year.getFullYear());
-    // const xTickValues = [];
-    // for (let year = startYear; year <= endYear; year += 2) {
-    //   xTickValues.push(new Date(year, 0, 1));
-    // }
-    // xAxis.tickValues(xTickValues);
-
-    const maxDataYear = d3.max(data, (d) => d.Year);
-    const xTickValues = x.ticks().concat(maxDataYear); // Add 2023 as a Date object
-    xAxis.tickValues(xTickValues);
+      const startYear = d3.min(data, (d) => d.Year.getFullYear());
+      const endYear = d3.max(data, (d) => d.Year.getFullYear());
+  
+      const xTickValues = x.ticks(d3.timeYear.every(2));
+      if (!xTickValues.includes(startYear)) {
+        xTickValues.unshift(new Date(startYear, 0, 1));
+      }
+      if (!xTickValues.includes(endYear)) {
+        xTickValues.push(new Date(endYear, 0, 1));
+      }
+      xAxis.tickValues(xTickValues);
   
       const xAxisGroup = svg
         .append("g")

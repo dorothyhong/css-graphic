@@ -66,9 +66,23 @@
       ) * 1000000;
     y.domain([0, maxYValue]);
 
-    // Draw the X-axis
-    const maxDataYear = d3.max(data, (d) => d.Year);
-    const xTickValues = x.ticks().concat(maxDataYear); // Add 2023 as a Date object
+    // Draw X-axis
+    const startYear = d3.min(data, (d) => d.Year.getFullYear());
+    const endYear = d3.max(data, (d) => d.Year.getFullYear());
+
+    // Define the years you want to filter out
+    // const filteredYears = [2020];
+
+    // Filter xTickValues to exclude filteredYears
+    const xTickValues = x.ticks(d3.timeYear.every(5));
+      // .filter(year => !filteredYears.includes(year.getFullYear()));
+
+    if (!xTickValues.includes(startYear)) {
+      xTickValues.unshift(new Date(startYear, 0, 1));
+    }
+    if (!xTickValues.includes(endYear)) {
+      xTickValues.push(new Date(endYear, 0, 1));
+    }
     xAxis.tickValues(xTickValues);
 
     const xAxisGroup = svg
@@ -80,14 +94,14 @@
       .selectAll(".tick text")
       .attr("class", "chart-labels")
       .style("text-anchor", (d) => {
-        return d.getFullYear() === 1990
+        return d.getFullYear() === startYear
           ? "start"
-          : d.getFullYear() === 2023
+          : d.getFullYear() === endYear
           ? "end"
           : "middle";
       });
 
-    // Draw the Y-axis
+    // Draw Y-axis
     const yAxisGroup = svg
       .append("g")
       .call(yAxis)

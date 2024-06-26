@@ -32,8 +32,8 @@
     const y = d3.scaleLinear().range([height, 0]);
   
     // Define the axes
-    const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"));
-    const yAxis = d3.axisLeft(y).tickFormat(d3.format(",")).ticks(5); // Adjust ticks as needed
+    const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y")).ticks(d3.timeYear.every(10));
+    const yAxis = d3.axisLeft(y).tickFormat(d3.format(",")); // Adjust ticks as needed
   
     const tooltip = d3.select("#tooltip");
   
@@ -48,6 +48,41 @@
       // Update the scale domains with the processed data
       x.domain(d3.extent(data, (d) => d.Year));
       y.domain([0, Math.ceil(d3.max(data, (d) => d["Trillion Btu"]) / 200) * 200]);
+
+    // Draw X-axis
+    const startYear = d3.min(data, (d) => d.Year.getFullYear());
+    const endYear = d3.max(data, (d) => d.Year.getFullYear());
+
+    // Define the years you want to filter out
+    const filteredYears = [2020];
+
+    // Filter xTickValues to exclude filteredYears
+    const xTickValues = x.ticks(d3.timeYear.every(10))
+      .filter(year => !filteredYears.includes(year.getFullYear()));
+
+    if (!xTickValues.includes(startYear)) {
+      xTickValues.unshift(new Date(startYear, 0, 1));
+    }
+    if (!xTickValues.includes(endYear)) {
+      xTickValues.push(new Date(endYear, 0, 1));
+    }
+    xAxis.tickValues(xTickValues);
+
+    const xAxisGroup = svg
+      .append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(xAxis);
+
+    xAxisGroup
+      .selectAll(".tick text")
+      .attr("class", "chart-labels")
+      .style("text-anchor", (d) => {
+        return d.getFullYear() === startYear
+          ? "start"
+          : d.getFullYear() === endYear
+          ? "end"
+          : "middle";
+      });
 
       // Draw the Y-axis
       const yAxisGroup = svg
@@ -64,18 +99,6 @@
         .style("fill", "#000")
         .text("Trillion Btu");
 
-    
-    // Draw the X-axis
-    //   const xTickValues = x.ticks().concat(new Date(2022, 0, 1)); // Add 2022 as a Date object
-    //   xAxis.tickValues(xTickValues);
-  
-      const xAxisGroup = svg
-        .append("g")
-        .attr("transform", `translate(0,${height})`)
-        .call(xAxis);
-
-      xAxisGroup.call(xAxis);
-      xAxisGroup.selectAll(".tick text").attr("class", "chart-labels");
 
       // Define the line generator
       const lineGenerator = d3

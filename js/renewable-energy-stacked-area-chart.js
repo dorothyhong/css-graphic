@@ -3,7 +3,9 @@
   const aspectRatio = 0.7;
 
   // Get the container and its dimensions
-  const container = document.getElementById("renewable-energy-stacked-area-chart");
+  const container = document.getElementById(
+    "renewable-energy-stacked-area-chart"
+  );
   const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
   const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -66,9 +68,23 @@
     );
     y.domain([0, maxYValue]);
 
-    // Draw the X-axis
-    const maxDataYear = d3.max(data, (d) => d.Year);
-    const xTickValues = x.ticks().concat(maxDataYear); // Add 2023 as a Date object
+    // Draw X-axis
+    const startYear = d3.min(data, (d) => d.Year.getFullYear());
+    const endYear = d3.max(data, (d) => d.Year.getFullYear());
+
+    // Define the years you want to filter out
+    const filteredYears = [1985, 2020];
+
+    // Filter xTickValues to exclude filteredYears
+    const xTickValues = x.ticks(d3.timeYear.every(5))
+      .filter(year => !filteredYears.includes(year.getFullYear()));
+
+    if (!xTickValues.includes(startYear)) {
+      xTickValues.unshift(new Date(startYear, 0, 1));
+    }
+    if (!xTickValues.includes(endYear)) {
+      xTickValues.push(new Date(endYear, 0, 1));
+    }
     xAxis.tickValues(xTickValues);
 
     const xAxisGroup = svg
@@ -78,7 +94,14 @@
 
     xAxisGroup
       .selectAll(".tick text")
-      .attr("class", "chart-labels");
+      .attr("class", "chart-labels")
+      .style("text-anchor", (d) => {
+        return d.getFullYear() === startYear
+          ? "start"
+          : d.getFullYear() === endYear
+          ? "end"
+          : "middle";
+      });
 
     // Draw the Y-axis
     const yAxisGroup = svg
@@ -255,7 +278,9 @@
                         <td><span class="color-legend" style="background-color: ${colorScale(
                           "Wind"
                         )};"></span>Wind</td>
-                        <td class="value">${formatNumber(hoverData.Wind)} (${formatNumber2(
+                        <td class="value">${formatNumber(
+                          hoverData.Wind
+                        )} (${formatNumber2(
           (hoverData.Wind / total) * 100
         )}%)</td>
                     </tr>

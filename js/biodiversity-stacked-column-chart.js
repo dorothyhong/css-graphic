@@ -97,7 +97,7 @@ data.forEach((d) => {
 
     const legend = svg
       .append("g")
-      .attr("class", "chart-legend")
+      .attr("class", "chart-labels")
       .attr("transform", `translate(${width + dynamicMargin.left/2}, 0)`);
 
     const legendItemHeight = containerHeight * 0.05;
