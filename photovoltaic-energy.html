@@ -20,36 +20,45 @@
   </head>
   <body>
     <header>
-      <a id="name" href="biodiversity.html"> Biodiversity Factsheet </a>
+      <a id="name" href="photovoltaic.html"> Photovoltaic Energy Factsheet </a>
       <a id="name" href="index.html"> &lt; Go Back </a>
     </header>
 
-    <!-- Biodiveristy -->
-    <!-- Figure 1 -->
+    <!-- Photovoltaic Energy -->
+    <!-- Figure 1  -->
     <div class="CaptionedChart">
       <div class="HeaderHTML">
-        <span>Catalogued Earth and Ocean Species</span>
+        <span
+          >U.S. Average Unsubsidized Levelized Cost of Energy (LCOE) for
+          Utility-Scale Solar PV</span
+        >
       </div>
 
-      <div id="biodiversity-stacked-column-chart" class="chart"></div>
+      <div id="photovoltaic-energy-line-chart" class="chart"></div>
     </div>
 
-    <!-- Figure 2 -->
+    <!-- Figure 2  -->
     <div class="CaptionedChart">
       <div class="HeaderHTML">
-        <span>Genotype vs. Phenotype</span>
+        <span>Conversion Efficiency of a PV System</span>
       </div>
 
-      <!-- <div id="column-chart2" class="chart"></div> -->
+      <div>
+        <div id="photovoltaic-energy-diagram" class="chart"></div>
+        <div id="diagram-tooltip" class="diagram-tooltip"></div>
+      </div>
     </div>
 
-    <!-- Figure 3 -->
+    <!-- Figure 3  -->
     <div class="CaptionedChart">
       <div class="HeaderHTML">
-        <span>Biodiversity, Ecosystem Services, and Human Well-Being</span>
+        <span>Community Solar Map</span>
       </div>
 
-      <!-- <div id="column-chart2" class="chart"></div> -->
+      <div>
+        <select id="map-dropdown"></select>
+        <div id="photovoltaic-energy-interactive-map" class="chart"></div>
+      </div>
     </div>
 
     <!-- tooltip -->
@@ -62,6 +71,8 @@
     <script src="https://d3js.org/topojson.v3.min.js"></script>
 
     <!-- js files-->
-    <script src="./js/biodiversity/biodiversity-stacked-column-chart.js"></script>
+    <script src="./js/photovoltaic-energy/photovoltaic-energy-line-chart.js"></script>
+    <script src="./js/photovoltaic-energy/photovoltaic-energy-diagram.js"></script>
+    <script src="./js/photovoltaic-energy/photovoltaic-energy-interactive-map.js"></script>
   </body>
 </html>
