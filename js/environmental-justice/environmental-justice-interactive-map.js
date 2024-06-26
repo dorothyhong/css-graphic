@@ -34,7 +34,7 @@
   });
   
 
-  const aspectRatio = 0.75; // Define an aspect ratio for the chart
+  const aspectRatio = 0.6; // Define an aspect ratio for the chart
 
   // Get the container and its dimensions
   const container = document.getElementById("environmental-justice-interactive-map");

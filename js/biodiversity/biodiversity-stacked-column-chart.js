@@ -168,7 +168,7 @@ data.forEach((d) => {
         `
         <div class="tooltip-title"><span class="color-legend" style="background-color: ${colorScale(
               category
-            )};"></span>${formatNumber(category)}</div>
+            )};"></span>${category}</div>
 
         <table class="tooltip-content">
             <tr>
