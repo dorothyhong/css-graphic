@@ -99,6 +99,11 @@
                 tooltip.style("opacity", 0);
             });
 
+      // Define a scaling function for the offsets
+      const offsetScale = d3.scaleSqrt()
+      .domain([100, 10000])
+      .range([10, 20]);
+
     // Add text labels
     svg.selectAll(".node-label")
         .data(root.leaves())
@@ -106,13 +111,13 @@
         .append("text")
         .attr("class", "node-label")
         .attr("x", d => d.x0 + 5) // Slightly offset from the top left corner
-        .attr("y", d => d.y0 + 15) // Slightly offset from the top left corner
+        .attr("y", d => d.y0 + offsetScale((d.x1 - d.x0) / 12 * (d.y1 - d.y0) * 10)) // Slightly offset from the top left corner
         .attr("fill", "white") // Text color set to white
         .attr("font-size", d => {
             // Calculate font size based on rectangle area, with a min and max
-            const area = (d.x1 - d.x0) * (d.y1 - d.y0);
+            const area = (d.x1 - d.x0) / 14 * (d.y1 - d.y0) * 4;
             const minFontSize = 8;
-            const maxFontSize = 16;
+            const maxFontSize = 27;
             const scale = d3.scaleSqrt()
                 .domain([100, 10000]) // Adjust this domain depending on your dataset values
                 .range([minFontSize, maxFontSize]);

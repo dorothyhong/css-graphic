@@ -1,19 +1,20 @@
 (function () {
-    /* ----------------------- Dynamic dimensions ----------------------- */
+    // Dynamic dimensions 
     const aspectRatio = 0.7;
     const container = document.getElementById("environmental-justice-bar-chart");
     const containerWidth = container.offsetWidth;
     const containerHeight = containerWidth * aspectRatio;
     const dynamicMargin = {
         top: containerHeight * 0.1,
-        right: containerWidth * 0.18,
-        bottom: containerHeight * 0.1,
-        left: containerWidth * 0.05,
+        right: containerWidth * 0.3, // Adjusted for legend or labels
+        bottom: containerHeight * 0.2,
+        left: containerWidth * 0.2,
     };
+
     const width = containerWidth - dynamicMargin.left - dynamicMargin.right;
     const height = containerHeight - dynamicMargin.top - dynamicMargin.bottom;
 
-    /* ----------------------- Append SVG object ----------------------- */
+    // Append SVG object 
     const svg = d3
         .select("#environmental-justice-bar-chart")
         .append("svg")
@@ -22,64 +23,61 @@
         .append("g")
         .attr("transform", `translate(${dynamicMargin.left},${dynamicMargin.top})`);
 
-    /* ----------------------- Setup the scales and axes ----------------------- */
-    const x0 = d3.scaleBand().rangeRound([0, width]).paddingInner(0.1);
-    const x1 = d3.scaleBand().padding(0.1);
-    const y = d3.scaleLinear().rangeRound([height, 0]);
-    const xAxis = d3.axisBottom(x0);
-    const yAxis = d3.axisLeft(y).tickFormat(d => `${d}%`);
+    // Load and process the CSV data
+    d3.csv("./data/environmental-justice/environmental-justice3.csv").then(function (data) {
+        // Extract categories and subcategories
+        let categories = [...new Set(data.map(d => d.Category))];
+        let subcategories = [...new Set(data.map(d => d.Subcategory))];
 
-    /* ----------------------- Tooltip Setup ----------------------- */
-    const tooltip = d3.select("#tooltip").style("opacity", 0);
+        // Create scales
+        const x = d3.scaleLinear()
+            .domain([0, d3.max(data, d => +d.Percentage)])
+            .range([0, width]);
 
-    /* ----------------------- Load and process the CSV data ----------------------- */
-    d3.csv("./data/environmental-justice/environmental-justice3.csv", function(d) {
-        return {
-            Category: d.Category,
-            Subcategory: d.Subcategory,
-            Percentage: +d.Percentage,
-        };
-    }).then(function (data) {
-        const categories = Array.from(new Set(data.map(d => d.Category)));
-        const subcategories = Array.from(new Set(data.map(d => d.Subcategory)));
+        const y0 = d3.scaleBand()
+            .domain(categories)
+            .rangeRound([0, height])
+            .paddingInner(0.1);
 
-        x0.domain(categories);
-        x1.domain(subcategories).rangeRound([0, x0.bandwidth()]);
-        y.domain([0, d3.max(data, d => d.Percentage)]).nice();
+        const y1 = d3.scaleBand()
+            .domain(subcategories)
+            .padding(0.05)
+            .rangeRound([0, y0.bandwidth()]);
 
-        const nestedData = d3.group(data, d => d.Category);
+        const color = d3.scaleOrdinal(d3.schemeCategory10)
+            .domain(subcategories);
 
-        const categoryGroup = svg.selectAll(".categoryGroup")
-            .data(nestedData)
-            .enter().append("g")
-            .attr("class", "categoryGroup")
-            .attr("transform", d => `translate(${x0(d[0])},0)`)
-    
-        categoryGroup.selectAll("rect")
-            .data(d => d[1])
-            .enter().append("rect")
-            .attr("x", d => x1(d.Subcategory))
-            .attr("y", d => y(d.Percentage))
-            .attr("width", x1.bandwidth())
-            .attr("height", d => height - y(d.Percentage))
-            .attr("fill", "#69b3a2")
-            .on("mouseover", function(event, d) {
-                tooltip.transition().duration(200).style("opacity", 0.9);
-                tooltip.html(`Subcategory: ${d.Subcategory}<br/>Percentage: ${d.Percentage}%`)
-                    .style("left", (event.pageX) + "px")
-                    .style("top", (event.pageY - 28) + "px");
-            })
-            .on("mouseout", function() {
-                tooltip.transition().duration(500).style("opacity", 0);
-            });
+        // Add the bars
+        const barsGroups = svg.selectAll(".category-group")
+            .data(data)
+            .enter()
+            .append("g")
+            .attr("class", "category-group")
+            .attr("transform", d => `translate(0, ${y0(d.Category)})`);
 
+        barsGroups.selectAll(".bar")
+            .data(d => subcategories.map(subcategory => {
+                let datum = data.find(dat => dat.Subcategory === subcategory && dat.Category === d.Category);
+                return { subcategory, percentage: datum ? datum.Percentage : 0 };
+            }))
+            .enter()
+            .append("rect")
+            .attr("class", "bar")
+            .attr("x", 0)
+            .attr("y", d => y1(d.subcategory))
+            .attr("width", d => x(d.percentage))
+            .attr("height", y1.bandwidth())
+            .attr("fill", d => color(d.subcategory));
+
+        // Add the X Axis
         svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", `translate(0,${height})`)
-            .call(xAxis);
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
 
+        // Add the Y Axis
         svg.append("g")
-            .attr("class", "y axis")
-            .call(yAxis);
+            .call(d3.axisLeft(y0));
+
+        // Optional: Add legend if needed
     });
 })();
