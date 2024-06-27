@@ -93,24 +93,6 @@
     y.domain([0, maxYValue]);
 
     // Draw X-axis
-    const startYear = d3.min(data, (d) => d.Year.getFullYear());
-    const endYear = d3.max(data, (d) => d.Year.getFullYear());
-
-    // Define the years you want to filter out
-    const filteredYears = [2010];
-
-    // Filter xTickValues to exclude filteredYears
-    const xTickValues = x.ticks(d3.timeYear.every(2))
-      .filter(year => !filteredYears.includes(year.getFullYear()));
-
-    if (!xTickValues.includes(startYear)) {
-      xTickValues.unshift(new Date(startYear, 0, 1));
-    }
-    if (!xTickValues.includes(endYear)) {
-      xTickValues.push(new Date(endYear, 0, 1));
-    }
-    xAxis.tickValues(xTickValues);
-
     const xAxisGroup = svg
       .append("g")
       .attr("transform", `translate(0,${height})`)
@@ -118,14 +100,7 @@
 
     xAxisGroup
       .selectAll(".tick text")
-      .attr("class", "chart-labels")
-      .style("text-anchor", (d) => {
-        return d.getFullYear() === startYear
-          ? "start"
-          : d.getFullYear() === endYear
-          ? "end"
-          : "middle";
-      });
+      .attr("class", "chart-labels");
 
     // Draw the Y-axis
     const yAxisGroup = svg
