@@ -12,7 +12,7 @@
       top: containerHeight * 0.05,
       right: containerWidth * 0.1, // Adjust right margin if labels are too long
       bottom: containerHeight * 0.05,
-      left: containerWidth * 0.3, // Increase left margin to fit labels
+      left: containerWidth * 0.2, // Increase left margin to fit labels
     };
   
     // Calculate the width and height for the inner drawing area
@@ -75,7 +75,7 @@
         .attr("y", (d) => yScale(d.category))
         .attr("width", (d) => xScale(d.percentage))
         .attr("height", yScale.bandwidth())
-        .attr("fill", "#e16674");
+        .attr("fill", "#6298c6");
         // .attr("fill", (d) => colorScale(d.category)); // Use color scale for fill
   
       /* ----------------------- Adding labels ----------------------- */

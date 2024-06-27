@@ -148,7 +148,7 @@
       .attr("class", "chart-labels")
       .attr("text-anchor", "left")
       .attr("transform", `translate(${width / 2}, ${height + dynamicMargin.bottom})`)
-      .style("fill", "red")
+      .style("fill", "#000")
       .text("* 2022 data is not available in the Lazard report");
 
     // Define the line generator

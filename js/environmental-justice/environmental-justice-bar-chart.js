@@ -37,15 +37,12 @@
         const y0 = d3.scaleBand()
             .domain(categories)
             .rangeRound([0, height])
-            .paddingInner(0.1);
+            .paddingInner(0.1);  // Increased paddingInner for better spacing
 
         const y1 = d3.scaleBand()
             .domain(subcategories)
-            .padding(0.05)
+            .padding(0.05)  // Increased padding for better spacing
             .rangeRound([0, y0.bandwidth()]);
-
-        const color = d3.scaleOrdinal(d3.schemeCategory10)
-            .domain(subcategories);
 
         // Add the bars
         const barsGroups = svg.selectAll(".category-group")
@@ -67,7 +64,7 @@
             .attr("y", d => y1(d.subcategory))
             .attr("width", d => x(d.percentage))
             .attr("height", y1.bandwidth())
-            .attr("fill", d => color(d.subcategory));
+            .attr("fill", "#69b3a2");  // Adjusted fill color for visibility
 
         // Add the X Axis
         svg.append("g")

@@ -112,11 +112,16 @@
                     </table>
                 `)
                 .style('opacity', '0.9')
-                .style("left", `${event.pageX}px`)
+                .style("left", `${event.pageX + dynamicMargin.left / 4}px`)
                 .style("top", `${event.pageY}px`);
             })
-            .on('mouseleave', function() {
-                // Reset the appearance of the active bar
+            .on("mousemove", function (event, d) {
+                // Update tooltip position
+                tooltip.style("left", (event.pageX + dynamicMargin.left / 4) + "px")
+                    .style("top", (event.pageY) + "px");
+            })
+            .on("mouseout", function () {
+                // Hide tooltip
                 d3.select(this).attr("class", "bar");
 
                 // Reset the opacity of the other bars
