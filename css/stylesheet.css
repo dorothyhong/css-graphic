@@ -42,6 +42,10 @@ header a {
   height: auto;
 }
 
+#environmental-justice-bubble-chart {
+  width: 500px;
+}
+
 .HeaderHTML {
   padding: 10px 5px;
   font-family: "IBM Plex Serif", sans-serif;
@@ -139,19 +143,27 @@ table.tooltip-total {
 
 /* Map Dropdown */
 #map-dropdown {
-  margin: 5px;
-  /* padding: 10px;
+  margin-left: 20px;
+  padding: 10px;
   border-radius: 5px;
-  background-color: #f8f9fa;
   border: 1px solid #ced4da;
+  font-size: 1rem;
+  background-color: #fff;
   color: #495057;
-  cursor: pointer; */
+  cursor: pointer;
+  appearance: none; /* Removes default arrow */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 5px) center; 
+  padding-left: 10px;
+  padding-right: 30px; /* Ensure space for the arrow */
 }
 
-/* #map-dropdown option {
-  padding: 5px;
-  background-color: #ffffff;
-} */
+#map-dropdown:hover {
+  background-color: #e9ecef; /* Light grey background on hover */
+}
+
+
 
 
 
@@ -175,6 +187,10 @@ table.tooltip-total {
   .CaptionedChart,
   .chart {
     width: 600px;
+  }
+
+  #environmental-justice-bubble-chart {
+    width: 700px;
   }
 
   .HeaderHTML {
@@ -216,6 +232,10 @@ table.tooltip-total {
   .CaptionedChart,
   .chart {
     width: 650px;
+  }
+
+  #environmental-justice-bubble-chart, #greenhouse-gases-graph {
+    width: 720px;
   }
 
   .HeaderHTML {

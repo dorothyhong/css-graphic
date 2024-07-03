@@ -3,7 +3,7 @@
     const aspectRatio = 0.7;
 
     // Get the container and its dimensions
-    const container = document.getElementById("renewable-energy-stacked-column-chart2");
+    const container = document.getElementById("greenhouse-gases-stacked-column-chart");
     const containerWidth = container.offsetWidth; // Use offsetWidth for full element width
     const containerHeight = containerWidth * aspectRatio; // Calculate the height based on the width and aspect ratio
 
@@ -12,7 +12,7 @@
         top: containerHeight * 0.1,
         right: containerWidth * 0.17,
         bottom: containerHeight * 0.1,
-        left: containerWidth * 0.05,
+        left: containerWidth * 0.08,
     };
 
     // Calculate the width and height for the inner drawing area
@@ -21,7 +21,7 @@
 
     // Append SVG object
     const svg = d3
-        .select("#renewable-energy-stacked-column-chart2")
+        .select("#greenhouse-gases-stacked-column-chart")
         .append("svg")
         .attr("viewBox", `0 0 ${containerWidth} ${containerHeight}`)
         .attr("preserveAspectRatio", "xMinYMin meet")
@@ -33,21 +33,17 @@
     const y = d3.scaleLinear().range([height, 0]);
 
     const xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%Y"));
-    const yAxis = d3.axisLeft(y).tickFormat((d) => d / 1000);
+    const yAxis = d3.axisLeft(y).tickFormat(d3.format(","));
 
     const colorScale = d3
         .scaleOrdinal()
-        .domain(["Utility","Residential","Commercial","Community Solar"])
-        // .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6", "#f38f53"]);
-        // .range(["#1d476d", "#3167a4", "#8fc8e5", "#d8d8d8"]);
-        .range(["#1d476d", "#3167a4", "#8fc8e5", "#386660", "#e2e27a"]);
-        // .range(["#3167a4", "#8fc8e5", "#ffcb03", "#ffd579"]);
+        .domain(["CO2", "CH4", "N2O", "HFC, PFC, SF6, NF*"])
+        .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6"]);
         
-
     const tooltip = d3.select("#tooltip");
 
     /* ----------------------- Load and process the CSV data ----------------------- */
-    d3.csv("./data/renewable-energy/renewable-energy4.csv").then((data) => {
+    d3.csv("./data/greenhouse-gases/greenhouse-gases2.csv").then((data) => {
         // Parse years and convert string values to numbers
         data.forEach((d) => {
             d.Year = new Date(+d.Year, 0, 1);
@@ -57,19 +53,19 @@
         });
 
         // Stack the data
-        const stack = d3.stack().keys(["Utility","Residential","Commercial","Community Solar"]);
+        const stack = d3.stack().keys(["CO2", "CH4", "N2O", "HFC, PFC, SF6, NF*"]);
         const stackedData = stack(data);
 
         /* ----------------------- Update the scale domains with the processed data ----------------------- */
         x.domain(data.map((d) => d.Year));
         const maxYValue =
             Math.ceil(
-                d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1])) / 20000
-                ) * 20000;
+                d3.max(stackedData, (layer) => d3.max(layer, (d) => d[1])) / 1000
+                ) * 1000;
         y.domain([0, maxYValue]);
 
         // Draw the X-axis
-        const xTickValues = x.domain();
+        const xTickValues = x.domain().filter((d) => d.getFullYear() % 3 === 0); // Only even years
         xAxis.tickValues(xTickValues);
 
         const xAxisGroup = svg
@@ -80,6 +76,8 @@
         xAxisGroup
             .selectAll(".tick text")
             .attr("class", "chart-labels");
+            // .attr("transform", "rotate(-45)") // Rotate the text
+            // .style("text-anchor", "end");
 
         // Draw the Y-axis
         const yAxisGroup = svg
@@ -87,14 +85,14 @@
             .call(yAxis)
             .attr("class", "chart-labels");
 
-        // Append "in millions" label
+        // Append "y-axis" label
         yAxisGroup
             .append("text")
             .attr("class", "chart-labels")
             .attr("text-anchor", "middle")
             .attr("transform", `translate(0, -${dynamicMargin.top / 2})`)
             .style("fill", "#000")
-            .text("Thousands");
+            .text("MMT CO2e");
 
         
         /* ----------------------- Draw the chart ----------------------- */
@@ -147,14 +145,25 @@
             });
 
         legend
-            .append("text")
-            .attr("class", "chart-labels")
+            .append("foreignObject")
             .attr("x", 5)
-            .attr("y", 0)
+            .attr("y", -10)
+            .attr("width", 200)
+            .attr("height", 20)
+            .append("xhtml:div")
+            .attr("class", "chart-labels")
             .style("text-anchor", "start")
             .style("alignment-baseline", "middle")
             .style("fill", (d) => colorScale(d.key))
-            .text((d) => d.key);
+            .html((d) => {
+                const labels = {
+                    CO2: "CO<sub>2</sub>",
+                    CH4: "CH<sub>4</sub>",
+                    N2O: "N<sub>2</sub>O",
+                    "HFC, PFC, SF6, NF*": "HFC, PFC, SF<sub>6</sub>, NF<sub>*</sub>"
+                };
+                return labels[d.key];
+            });
 
         // Bind the legend to the same highlight logic
         legend.on("mouseover", function (event, d) {
@@ -179,44 +188,41 @@
                     <div class="tooltip-title">${hoverData.Year.getFullYear()}</div>
                     <table class="tooltip-content">  
                     <tr>
-                        <td><span class="color-legend" style="background-color: ${colorScale("Community Solar")};"></span>Community Solar</td>
-                        <td class="value">${formatNumber(hoverData["Community Solar"])}</td>
+                        <td><span class="color-legend" style="background-color: ${colorScale("CO2")};"></span>CO<sub>2</sub></td>
+                        <td class="value">${formatNumber(hoverData["CO2"])}</td>
                     </tr>
                     <tr>
-                        <td><span class="color-legend" style="background-color: ${colorScale("Commercial")};"></span>Commercial</td>
-                        <td class="value">${formatNumber(hoverData.Commercial)}</td>
+                        <td><span class="color-legend" style="background-color: ${colorScale("CH4")};"></span>CH<sub>4</sub></td>
+                        <td class="value">${formatNumber(hoverData.CH4)}</td>
                     </tr>
                     <tr>
-                        <td><span class="color-legend" style="background-color: ${colorScale("Residential")};"></span>Residential</td>
-                        <td class="value">${formatNumber(hoverData.Residential)}</td>
+                        <td><span class="color-legend" style="background-color: ${colorScale("N2O")};"></span>N<sub>2</sub>O</td>
+                        <td class="value">${formatNumber(hoverData.N2O)}</td>
                     </tr>
                     <tr>
-                        <td><span class="color-legend" style="background-color: ${colorScale("Utility")};"></span>Utility</td>
-                        <td class="value">${formatNumber(hoverData.Utility)}</td>
+                        <td><span class="color-legend" style="background-color: ${colorScale("HFC, PFC, SF6, NF*")};"></span>HFC, PFC, SF<sub>6</sub>, NF*</td>
+                        <td class="value">${formatNumber(hoverData["HFC, PFC, SF6, NF*"])}</td>
                     </tr>
-                    </table>
-                    <table class="tooltip-total">
-                        <tr>
-                            <td><strong>Total</strong></td>
-                            <td class="value">${formatNumber(hoverData.Utility + hoverData.Commercial + hoverData["Community Solar"] + hoverData.Residential)}</td>
-                        </tr>
                     </table>
                 `);
             }
         }
 
-        // Create a rect for listening to mouse events
-        svg
+        // Draw the overlay rects
+        const overlayRects = svg.selectAll(".overlay-rect")
+            .data(data)
+            .enter()
             .append("rect")
-            .attr("class", "listening-rect")
-            .attr("width", width + dynamicMargin.left / 4)
+            .attr("class", "overlay-rect")
+            .attr("x", d => x(d.Year))
+            .attr("y", 0)
+            .attr("width", x.bandwidth())
             .attr("height", height)
-            .attr("fill", "none")
-            .attr("pointer-events", "all")
+            .style("fill", "transparent")
+            .style("pointer-events", "all")
             .on("mousemove", onMouseMove)
-            .on("mouseout", () => {
-                tooltip.style("opacity", "0");
-                resetCategoryHighlight(); 
+            .on("mouseout", function () {
+                tooltip.style("opacity", 0);
             });
     });
 })();

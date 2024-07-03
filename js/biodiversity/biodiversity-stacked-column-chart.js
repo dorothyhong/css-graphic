@@ -60,14 +60,24 @@ data.forEach((d) => {
     // Define the colors for the stack
     const colorScale = d3
       .scaleOrdinal()
+      // .range([
+      //   "#ae416c",
+      //   "#e16674",
+      //   "#c1824b",
+      //   "#c36043",
+      //   "#799a6c",
+      //   "#7088b0",
+      //   "#d8d8d8",
+      // ]);
       .range([
-        "#ae416c",
-        "#e16674",
-        "#c1824b",
-        "#c36043",
-        "#799a6c",
-        "#7088b0",
-        "#d8d8d8",
+        // "#1d476d", 
+        "#3167a4", 
+        "#8fc8e5", 
+        "#386660", 
+        "#e2e27a",
+        "#ffcb03", 
+        "#ce5845",
+        "#ed974a", 
       ]);
 
     const tooltip = d3.select("#tooltip");

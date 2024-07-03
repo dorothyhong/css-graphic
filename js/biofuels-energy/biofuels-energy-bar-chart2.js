@@ -33,15 +33,22 @@
   const xScale = d3.scaleLinear().range([0, width]);
   const colorScale = d3
     .scaleOrdinal()
-    .range([
-      "#ae416c",
-      "#c36043",
-      "#799a6c",
-      "#75bf70",
-      "#f38f53",
-      "#e16674",
-      "#c1824b",
-    ]); // Updated color range for feedstocks
+    // .range([
+    //   "#ae416c",
+    //   "#c36043",
+    //   "#799a6c",
+    //   "#75bf70",
+    //   "#f38f53",
+    //   "#e16674",
+    //   "#c1824b",
+    // ]); 
+    .range(["#1d476d", 
+      "#3167a4", 
+      "#8fc8e5", 
+      "#386660", 
+      "#ffcb03",
+      "#ce5845",
+      "#ed974a",]);
   const formatDecimal = d3.format(".0f"); // Formatter to round to one decimal place
 
   const xAxis = (g) =>
@@ -74,7 +81,7 @@
 
     // Update scales
     yScale.domain(feedstocks);
-    xScale.domain([0, Math.ceil(d3.max(data, (d) => d.biofuelYield) / 20) * 20]); // Round up to nearest 180
+    xScale.domain([0, Math.ceil(d3.max(data, (d) => d.biofuelYield) / 20) * 20]); 
 
 
     // Draw the y-axis
@@ -125,7 +132,7 @@
         d3.select(this).attr("class", "bar active");
 
         // Reduce the opacity of the other bars
-        svg.selectAll(".bar").filter(e => e !== d).style("opacity", 0.1);
+        // svg.selectAll(".bar").filter(e => e !== d).style("opacity", 0.1);
 
         // Show and populate the tooltip
         tooltip.html(`
@@ -133,9 +140,9 @@
             <table class="tooltip-content">
                 <tr>
                 <td>
-                    Biofuel Yield
+                    Biofuel Yield:
                 </td>
-                <td class="value">${d.biofuelYield}</td>
+                <td class="value"><strong>${d.biofuelYield}</strong> GJ/ha</td>
                 </tr>
             </table>
         `)
@@ -153,7 +160,7 @@
         d3.select(this).attr("class", "bar");
 
         // Reset the opacity of the other bars
-        svg.selectAll(".bar").style("opacity", 1);
+        // svg.selectAll(".bar").style("opacity", 1);
 
         // Hide the tooltip
         tooltip.style('opacity', '0');

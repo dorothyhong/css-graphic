@@ -22,7 +22,10 @@
     // Color scale for continents
     const colorScale = d3.scaleOrdinal()
         .domain(["Asia", "Americas", "Europe", "Africa", "Oceania"])
-        .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6", "#f38f53"]);
+        // .range(["#eb5250", "#6298c6", "#75bf70", "#ae71b6", "#f38f53"]);
+        // .range(["#00274c", "#1d476d", "#3167a4", "#8fc8e5", "#d8d8d8"]);
+        // .range(["#1d476d", "#3167a4", "#8fc8e5", "#386660", "#e2e27a"]);
+        .range(["#1d476d", "#3167a4", "#8fc8e5", "#ffcb03", "#ffd579"]);
 
     // Append SVG object
     const svg = d3
@@ -32,11 +35,6 @@
         .attr("preserveAspectRatio", "xMinYMin meet")
         .append("g")
         .attr("transform", `translate(${dynamicMargin.left},${dynamicMargin.top})`);
-
-    // Define tooltip element
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
 
     // Load data from CSV
     d3.csv("./data/environmental-justice/environmental-justice2.csv").then((data) => {

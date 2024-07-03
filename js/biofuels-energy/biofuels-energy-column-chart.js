@@ -41,6 +41,9 @@
     const colorScale = d3.scaleOrdinal()
         .domain(["Brazil", "USA", "EU", "Indonesia and Malaysia", "China", "Mozambique", "South Africa"])
         .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+        
+
+         
 
     /* ----------------------- Loading and processing data ----------------------- */
     d3.csv("data/biofuels-energy/biofuels-energy3.csv", function (d) {

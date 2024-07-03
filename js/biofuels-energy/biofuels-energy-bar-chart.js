@@ -33,19 +33,33 @@
   const yScale = d3.scaleBand().range([0, height]).padding(0.1);
   const colorScale = d3
     .scaleOrdinal()
+    // .range([
+    //   "#ae416c",
+    //   "#ae416c",
+    //   "#ae416c",
+    //   "#ae416c",
+    //   "#ae416c",
+    //   "#3167a4",
+    //   "#3167a4",
+    //   "#3167a4",
+    //   "#8cc9f2",
+    //   "#8cc9f2",
+    //   "#c36043",
+    //   "#799a6c",
+    // ]); 
     .range([
-      "#ae416c",
-      "#ae416c",
-      "#ae416c",
-      "#ae416c",
-      "#ae416c",
-      "#e16674",
-      "#e16674",
-      "#e16674",
-      "#c1824b",
-      "#c1824b",
-      "#c36043",
-      "#799a6c",
+      "#1d476d",
+      "#1d476d",
+      "#1d476d",
+      "#1d476d",
+      "#1d476d",
+      "#3167a4",
+      "#3167a4",
+      "#3167a4",
+      "#8cc9f2",
+      "#8cc9f2",
+      "#ffcb03",
+      "#ffd579",
     ]); // Updated color range
   const formatDecimal = d3.format(".1f"); // Formatter to round to one decimal place
 

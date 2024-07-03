@@ -114,7 +114,7 @@
                 d3.select(this).attr("class", "bar active");
 
                 // Reduce the opacity of the other bars
-                svg.selectAll(".bar").filter(e => e !== d).style("opacity", 0.1);
+                // svg.selectAll(".bar").filter(e => e !== d).style("opacity", 0.1);
 
                 // Show and populate the tooltip
                 tooltip.html(`
@@ -142,7 +142,7 @@
                 d3.select(this).attr("class", "bar");
 
                 // Reset the opacity of the other bars
-                svg.selectAll(".bar").style("opacity", 1);
+                // svg.selectAll(".bar").style("opacity", 1);
 
                 // Hide the tooltip
                 tooltip.style('opacity', '0');

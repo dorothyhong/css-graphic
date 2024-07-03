@@ -46,14 +46,23 @@
       "Solar PV-Utility",
       "Wind-Onshore",
     ])
+    // .range([
+    //   "#e41a1c", // Nuclear
+    //   "#377eb8", // Gas Peaking
+    //   "#4daf4a", // Coal
+    //   "#984ea3", // Geothermal
+    //   "#ff7f00", // Gas Combined Cycle
+    //   "#88ccee", // Solar PV-Utility
+    //   "#a65628", // Wind-Onshore
+    // ]);
     .range([
-      "#e41a1c", // Nuclear
-      "#377eb8", // Gas Peaking
-      "#4daf4a", // Coal
-      "#984ea3", // Geothermal
-      "#ff7f00", // Gas Combined Cycle
-      "#88ccee", // Solar PV-Utility
-      "#a65628", // Wind-Onshore
+      "#1d476d", // Nuclear
+      "#3167a4", // Gas Peaking
+      "#8fc8e5", // Coal
+      "#386660", // Geothermal
+      "#ffcb03", // Gas Combined Cycle
+      "#ce5845", // Solar PV-Utility
+      "#ed974a", // Wind-Onshore
     ]);
 
   const tooltip = d3.select("#tooltip");

@@ -22,7 +22,7 @@
   });
 
   const container = document.getElementById("photovoltaic-energy-interactive-map");
-  const aspectRatio = 0.75;
+  const aspectRatio = 0.65;
   const containerWidth = container.offsetWidth;
   const containerHeight = containerWidth * aspectRatio;
 
@@ -30,7 +30,7 @@
     top: containerHeight * 0.05, // 5% of the container height
     right: containerWidth * 0.15, // 15% of the container width
     bottom: containerHeight * 0.1, // 10% of the container height
-    left: containerWidth * 0.08, // 5% of the container width
+    left: containerWidth * 0.05, // 5% of the container width
   };
   const width = containerWidth - dynamicMargin.left - dynamicMargin.right;
   const height = containerHeight - dynamicMargin.top - dynamicMargin.bottom;
@@ -62,33 +62,8 @@
     .attr("height", 8)
     .append("path")
     .attr("d", "M0,8 l8,-8 M-2,2 l4,-4 M6,10 l4,-4")
-    .attr("stroke", "#797979") 
-    .attr("stroke-width", 1);
-
-
-  // defs
-  //   .append("pattern")
-  //   .attr("id", "circlePattern")
-  //   .attr("patternUnits", "userSpaceOnUse")
-  //   .attr("width", 8)
-  //   .attr("height", 8)
-  //   .append("circle")
-  //   .attr("cx", 4)
-  //   .attr("cy", 4)
-  //   .attr("r", 2)
-  //   .attr("fill", "red");
-  // Define the vertical line pattern
-  
-  defs
-    .append("pattern")
-    .attr("id", "verticalLinePattern")
-    .attr("patternUnits", "userSpaceOnUse")
-    .attr("width", 5) // Width of the pattern box
-    .attr("height", 4) // Height of the pattern box
-    .append("path")
-    .attr("d", "M 2.5,0 L 2.5,4") // A path for vertical line
-    .attr("stroke", "red") 
-    .attr("stroke-width", 1.5); // Width of the stroke for better visibility
+    .attr("stroke", "#be2624")
+    .attr("stroke-width", 1.5);
 
   let selectedOption = "all"; // Default selected option
 
@@ -120,7 +95,7 @@
           group
             .append("path")
             .attr("d", path(stateData))
-            .attr("fill", "#ffeed2");
+            .attr("fill", "#ffffb4");
         }
       }
 
@@ -129,7 +104,7 @@
           group
             .append("path")
             .attr("d", path(stateData))
-            .attr("fill", "url(#diagonalHatch)");
+            .attr("fill", "#f99f4f");
         }
       }
 
@@ -138,8 +113,7 @@
           group
             .append("path")
             .attr("d", path(stateData))
-            // .attr("fill", "url(#circlePattern)");
-            .attr("fill", "url(#verticalLinePattern)");
+            .attr("fill", "url(#diagonalHatch)");
         }
       }
     });
@@ -148,43 +122,40 @@
     stateGroups
       .on("mouseover", (event, d) => {
         tooltip.style("opacity", 0.9);
+
+        let tooltipContent = `
+          <div class="tooltip-title">${d.properties.name}</div>
+          <table class="tooltip-content">
+              <tr>
+                  <td><span class="color-legend" style="background-color: #ffffb4"></span>Projects: </td>
+                  <td class="value">${d.properties.projects ? "Yes" : "No"}</td>
+              </tr>
+              <tr>
+                  <td><span class="color-legend" style="background-color: #f99f4f"></span>Legislation: </td>
+                  <td class="value">${d.properties.legislation ? "Yes" : "No"}</td>
+              </tr>
+              <tr>
+                  <td><span class="color-legend" style="background-color: #be2624"></span>Programs: </td>
+                  <td class="value">${d.properties.programs ? "Yes" : "No"}</td>
+              </tr>`;
+
+        // Only add Number of Programs and Program Names if programs exist
+        if (d.properties.programs) {
+          tooltipContent += `
+              <tr>
+                  <td><span class="color-legend" style="background: url(#diagonalHatch)"></span>Number of Programs: </td>
+                  <td class="value">${d.properties.numberOfPrograms}</td>
+              </tr>
+              <tr>
+                  <td><span class="color-legend" style="background: url(#diagonalHatch)"></span>Program Names: </td>
+                  <td class="value">${formatProgramNames(d.properties.programNames)}</td>
+              </tr>`;
+        }
+
+        tooltipContent += `</table>`;
+
         tooltip
-          .html(
-            `
-              <div class="tooltip-title">${d.properties.name}</div>
-              <table class="tooltip-content">
-                  <tr>
-                      <td><span class="color-legend" style="background-color: #ffeed2"></span>Projects: </td>
-                      <td class="value">${
-                        d.properties.projects ? "Yes" : "No"
-                      }</td>
-                  </tr>
-                  <tr>
-                      <td><span class="color-legend" style="background: url(#diagonalHatch)"></span>Legislation: </td>
-                      <td class="value">${
-                        d.properties.legislation ? "Yes" : "No"
-                      }</td>
-                  </tr>
-                  <tr>
-                      <td><span class="color-legend" style="background: url(#circlePattern)"></span>Programs: </td>
-                      <td class="value">${
-                        d.properties.programs ? "Yes" : "No"
-                      }</td>
-                  </tr>
-                  <tr>
-                      <td><span class="color-legend" style="background: url(#circlePattern)"></span>Number of Programs: </td>
-                      <td class="value">${
-                        d.properties.numberOfPrograms
-                      }</td>
-                  </tr>
-                  <tr>
-                      <td><span class="color-legend" style="background: url(#circlePattern)"></span>Program Names: </td>
-                      <td class="value">${
-                        d.properties.programNames
-                      }</td>
-                  </tr>
-              </table>`
-          )
+          .html(tooltipContent)
           .style("left", `${event.pageX}px`)
           .style("top", `${event.pageY}px`);
       })
@@ -194,18 +165,12 @@
   };
 
   const dropdown = d3
-    .select("#map-dropdown")
-    .style("padding", "10px")
-    .style("border-radius", "5px")
-    .style("border", "1px solid #ced4da")
-    .style("font-size", "1rem")
-    .style("background-color", "#eaeaea")
-    .style("color", "#495057")
-    .style("cursor", "pointer")
-    .on("change", function () {
-      selectedOption = this.value; // Update selected option
-      updateMap();
-    });
+  .select("#map-dropdown")
+  .style("width", `${containerWidth * 0.2}px`) // Adjust width dynamically based on container size
+  .on("change", function () {
+    selectedOption = this.value.toLowerCase(); // Update selected option
+    updateMap();
+  });
 
   dropdown
     .selectAll("option")
@@ -213,7 +178,8 @@
     .enter()
     .append("option")
     .text((d) => d)
-    .attr("value", (d) => d.toLowerCase());
+    .attr("value", (d) => d.toLowerCase())
+    .attr("class", "chart-labels");
 
   updateMap();
 
@@ -227,45 +193,59 @@
     .attr("d", path)
     .attr("fill", "none") // No fill, only the stroke is needed
     .attr("stroke", "black") // Black stroke color
-    .attr("stroke-width", 0.5)
-    .attr("stroke-linejoin", "round"); // for rounded corners if needed
+    .attr("stroke-width", 0.2);
 
-  // Create the legend
-  const legendData = [
-    { color: "#ffeed2", text: "Projects" },
-    { color: "url(#diagonalHatch)", text: "Legislation" },
-    { color: "url(#verticalLinePattern)", text: "Programs" },
-  ];
+// Create the legend data
+const legendData = [
+  { color: "#ffffb4", text: "Projects" },
+  { color: "#f99f4f", text: "Legislation" },
+  { color: "url(#diagonalHatch)", text: "Programs" },
+];
 
-  const legend = svg
-    .append("g")
-    .attr("class", "legend")
-    .attr(
-      "transform",
-      `translate(${width + dynamicMargin.left / 3}, ${height / 2})`
-    );
+// Adjust legend position to the right of the map.
+const legend = svg
+  .append("g")
+  .attr("class", "legend")
+  .attr("transform", `translate(${width + dynamicMargin.left / 2}, ${height / 2})`);
 
-  const legendRectWidth = containerWidth * 0.02; // 2% of container width
-  const legendRectHeight = containerHeight * 0.02; // 2% of container height
+// Calculate the legend rectangle dimensions based on container size
+const legendRectWidth = containerWidth * 0.02; // 2% of container width
+const legendRectHeight = containerHeight * 0.02; // 2% of container height
 
-  legend
-    .selectAll("rect")
-    .data(legendData)
-    .enter()
-    .append("rect")
-    .attr("x", 0)
-    .attr("y", (d, i) => i * (legendRectHeight + 5)) // Add some spacing between rectangles
-    .attr("width", legendRectWidth)
-    .attr("height", legendRectHeight)
-    .style("fill", (d) => d.color);
+// Add rectangles for each item in legendData
+legend.selectAll("rect")
+  .data(legendData)
+  .enter()
+  .append("rect")
+  .attr("x", 0)
+  .attr("y", (d, i) => i * (legendRectHeight + 5)) // Add some spacing between rectangles
+  .attr("width", legendRectWidth)
+  .attr("height", legendRectHeight)
+  .style("fill", d => d.color)
+  .attr("stroke", "#000")
+  .attr("stroke-width", 0.5);
 
-  legend
-    .selectAll("text")
-    .data(legendData)
-    .enter()
-    .append("text")
-    .attr("x", legendRectWidth + 5) // Position text to the right of the rectangle
-    .attr("y", (d, i) => i * (legendRectHeight + 5) + legendRectHeight) // Center text vertically
-    .style("font-size", "12px")
-    .text((d) => d.text);
+// Add text labels for each item in legendData
+legend.selectAll("text")
+  .data(legendData)
+  .enter()
+  .append("text")
+  .attr("x", legendRectWidth + 5) // Position text to the right of the rectangle
+  .attr("y", (d, i) => i * (legendRectHeight + 5) + legendRectHeight) // Center text vertically
+  .text(d => d.text)
+  .attr("class", "chart-labels");
+
+
+  
+
+  function formatProgramNames(programNames) {
+    if (!programNames) return "";
+
+    const names = programNames.split(';').map(name => name.trim());
+    let formattedNames = "";
+    names.forEach(name => {
+      formattedNames += `${name}<br>`;
+    });
+    return formattedNames;
+  }
 })();
